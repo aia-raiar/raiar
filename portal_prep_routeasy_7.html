@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prévia Routeasy | Raiar Orgânicos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+:root{
+  --azul:#5CDCF2; --marinho:#254D69; --marinho-dark:#182F41; --rosa:#FFA385; --amarelo:#FFD043;
+  --bg:#F4F6F8; --surface:#fff; --border:#DDE5EA;
+  --text:#1a1a1a; --muted:#7a8a96; --ok:#2d6a4f; --warn:#c84b31;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);min-height:100vh}
+
+/* ---------- Header ---------- */
+.rh{background:var(--marinho);height:60px;padding:0 40px;display:grid;
+  grid-template-columns:200px 1fr 200px;align-items:center;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(37,77,105,.35)}
+.rh-logo{height:38px;width:auto}
+.rh-center{font-size:12px;color:rgba(255,255,255,.6);letter-spacing:3px;
+  text-transform:uppercase;font-weight:800;text-align:center}
+.rh-right{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+
+/* ---------- Inner hero strip ---------- */
+.page-hero{background:linear-gradient(135deg,var(--marinho) 0%,var(--marinho-dark) 100%);
+  padding:26px 40px;display:flex;align-items:center;gap:18px;
+  border-bottom:3px solid var(--azul)}
+.page-hero-icon{font-size:32px;background:rgba(92,220,242,.15);border-radius:14px;
+  padding:12px;line-height:1;flex-shrink:0}
+.page-hero-text{flex:1;min-width:0}
+.page-hero-title{font-size:21px;font-weight:800;color:#fff}
+.page-hero-sub{font-size:12.5px;color:rgba(255,255,255,.6);margin-top:3px}
+
+/* ---------- Content ---------- */
+.content{max-width:980px;margin:0 auto;padding:36px 40px 64px}
+section{margin-bottom:24px}
+
+/* ---------- Steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.step-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;
+  padding:16px 18px;position:relative;transition:border-color .2s}
+.step-card.active{border-color:var(--azul)}
+.step-card.done{border-color:var(--ok)}
+.step-card-num{font-size:10.5px;color:var(--muted);letter-spacing:1.5px;font-weight:800;margin-bottom:5px}
+.step-card.active .step-card-num{color:var(--marinho)}
+.step-card.done .step-card-num{color:var(--ok)}
+.step-card-title{font-size:13.5px;font-weight:800;color:var(--marinho)}
+.step-card-desc{font-size:11.5px;color:var(--muted);margin-top:3px}
+.step-card-status{position:absolute;top:13px;right:15px;font-size:15px;display:none;color:var(--ok)}
+.step-card.done .step-card-status{display:block}
+@media (max-width:760px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* ---------- Panels ---------- */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:22px 24px;margin-bottom:20px}
+.panel h2{font-size:14.5px;color:var(--marinho);font-weight:800;margin-bottom:4px}
+.panel .hint{font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+
+/* ---------- Upload zone ---------- */
+.upload-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:640px){.upload-row{grid-template-columns:1fr}}
+.upload-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+.upload-card-title{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);font-weight:800;margin-bottom:4px}
+.upload-card-name{font-size:13px;font-weight:800;color:var(--marinho);margin-bottom:10px}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px 14px;
+  text-align:center;cursor:pointer;position:relative;transition:all .2s}
+.upload-zone:hover{border-color:var(--azul);background:rgba(92,220,242,.04)}
+.upload-zone.has-file{border-color:var(--ok);background:rgba(45,106,79,.05)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-icon{font-size:22px;margin-bottom:5px;display:block}
+.upload-label{font-size:12.5px;color:var(--muted)}
+.upload-label strong{color:var(--warn)}
+.upload-hint{color:var(--muted);font-size:11px;margin-top:4px}
+.upload-filename{margin-top:9px;font-size:12px;font-weight:800;color:var(--ok);word-break:break-all}
+.badge-opt{display:inline-block;font-size:10px;background:var(--bg);color:var(--muted);
+  border-radius:20px;padding:2px 9px;margin-left:6px;font-weight:700;vertical-align:middle}
+
+/* ---------- Config blocks ---------- */
+.cfg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:700px){.cfg-grid{grid-template-columns:1fr}}
+.cfg-block{border:1px solid var(--border);border-radius:12px;padding:16px 18px;background:var(--bg)}
+.cfg-block h3{font-size:12.5px;color:var(--marinho);font-weight:800;margin-bottom:10px}
+.cfg-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px}
+.cfg-row label{flex:1;color:var(--muted);font-weight:700}
+input[type=time],input[type=number],input[type=text],select{
+  font-family:'Nunito',sans-serif;border:1px solid var(--border);border-radius:8px;
+  padding:7px 10px;font-size:13px;background:#fff;color:var(--text);font-weight:700}
+input[type=number]{width:80px}
+.seg-list{max-height:210px;overflow:auto;border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;background:#fff;margin-bottom:12px}
+.seg-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:12.5px}
+.seg-item label{flex:1;color:var(--text);font-weight:700}
+.seg-item input{flex:none}
+.seg-tag{font-size:10px;font-weight:800;border-radius:20px;padding:1px 8px}
+.seg-tag.reduzido{background:rgba(92,220,242,.2);color:var(--marinho)}
+
+/* ---------- Buttons ---------- */
+button{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;
+  border:none;border-radius:50px;padding:13px 30px;cursor:pointer;
+  letter-spacing:.3px;transition:all .15s}
+button.primary{background:var(--marinho);color:#fff}
+button.primary:hover:not(:disabled){background:var(--azul);color:var(--marinho)}
+button.secondary{background:var(--bg);color:var(--marinho);border:1.5px solid var(--border);
+  padding:11px 22px}
+button.secondary:hover{border-color:var(--azul)}
+button.ok{background:var(--ok);color:#fff}
+button.ok:hover:not(:disabled){opacity:.85}
+button:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:12px;justify-content:flex-end;margin-top:6px}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Pipeline / log ---------- */
+.pipeline{display:flex;align-items:center;justify-content:space-between;margin:4px 0 22px;flex-wrap:wrap;gap:4px}
+.pipe-node{flex:1;min-width:90px;text-align:center;font-size:11px;color:var(--muted);
+  position:relative;padding-top:32px;font-weight:700}
+.pipe-node .circle{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .3s}
+.pipe-node.active .circle{border-color:var(--amarelo);background:var(--amarelo);animation:pulse 1s infinite}
+.pipe-node.done .circle{border-color:var(--ok);background:var(--ok);color:#fff}
+.pipe-node.done .circle::after{content:"✓"}
+.pipe-line{position:absolute;top:11px;left:-50%;width:100%;height:2px;background:var(--border);z-index:-1}
+.pipe-node:first-child .pipe-line{display:none}
+.pipe-node.done .pipe-line{background:var(--ok)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,208,67,.5)}50%{box-shadow:0 0 0 6px rgba(255,208,67,0)}}
+
+.log-panel{background:var(--marinho);border-radius:12px;padding:16px 20px}
+.log-line{font-size:11.5px;color:rgba(255,255,255,.65);margin-bottom:5px;
+  padding-left:12px;border-left:2px solid rgba(255,255,255,.2)}
+
+/* ---------- Stats / summary cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:22px}
+.card{background:var(--surface);padding:15px 17px}
+.card .n{font-size:24px;font-weight:800;color:var(--marinho)}
+.card .n.warn{color:var(--warn)}
+.card .l{font-size:10.5px;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;
+  margin-top:2px;font-weight:700}
+
+/* ---------- Tabs / tables ---------- */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tab{padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);
+  border-bottom:2px solid transparent}
+.tab.active{color:var(--marinho);border-color:var(--azul)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+table.rev{width:100%;border-collapse:collapse;font-size:12px}
+table.rev th{text-align:left;background:var(--bg);color:var(--muted);padding:8px 9px;
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);
+  position:sticky;top:0}
+table.rev td{padding:7px 9px;border-bottom:1px solid var(--bg);vertical-align:top}
+table.rev tr:hover td{background:rgba(92,220,242,.05)}
+.tbl-wrap{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.obs-snip{color:var(--muted);font-size:11px;max-width:230px;display:block}
+.tag{display:inline-block;font-size:10px;border-radius:20px;padding:2px 8px;font-weight:800}
+.tag.high{background:rgba(45,106,79,.12);color:var(--ok)}
+.tag.low{background:rgba(200,75,49,.1);color:var(--warn)}
+.mini-input{width:100%;min-width:100px;margin-bottom:3px;font-weight:700}
+
+.region-count{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;
+  border-bottom:1px dashed var(--border)}
+.region-count b{color:var(--marinho)}
+
+.empty-note{color:var(--muted);font-size:12.5px;font-style:italic;padding:16px 0}
+.footnote{font-size:11.5px;color:var(--muted);margin-top:10px}
+.hidden{display:none !important}
+
+/* ---------- Footer ---------- */
+.raiar-footer{background:var(--marinho);color:rgba(255,255,255,.35);
+  text-align:center;padding:18px;font-size:11px;letter-spacing:2px;margin-top:12px}
+
+@media (max-width:640px){
+  .rh{padding:0 16px;grid-template-columns:110px 1fr 30px}
+  .rh-logo{height:30px}
+  .rh-center{font-size:9.5px;letter-spacing:1.5px}
+  .page-hero{padding:20px}
+  .content{padding:20px 16px 48px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="rh">
+  <div><img src="data:image/png;base64,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" class="rh-logo" alt="Raiar Orgânicos"></div>
+  <div class="rh-center">Automação - Ajuste de Endereços - Prévia Roteirização</div>
+  <div class="rh-right"></div>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-icon">🚚</div>
+  <div class="page-hero-text">
+    <div class="page-hero-title">Prévia Routeasy</div>
+    <div class="page-hero-sub">Ajustes de horário (janela de descarga e tempo médio de descarga), endereços e alocação prévia de Macro/Micro Região Logística</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="steps" id="steps">
+    <div class="step-card active" data-step="1"><div class="step-card-num">ETAPA 1</div><div class="step-card-title">Upload</div><div class="step-card-desc">Prévia + book histórico</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="2"><div class="step-card-num">ETAPA 2</div><div class="step-card-title">Ajustes</div><div class="step-card-desc">Janela padrão e segmentos</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="3"><div class="step-card-num">ETAPA 3</div><div class="step-card-title">Processar</div><div class="step-card-desc">Horário, CEP, tempo de atend.</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="4"><div class="step-card-num">ETAPA 4</div><div class="step-card-title">Endereços</div><div class="step-card-desc">Revisar candidatos da observação</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="5"><div class="step-card-num">ETAPA 5</div><div class="step-card-title">Alocação</div><div class="step-card-desc">Região de cada cliente</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="6"><div class="step-card-num">ETAPA 6</div><div class="step-card-title">Exportar</div><div class="step-card-desc">Baixar planilha final</div><div class="step-card-status">✓</div></div>
+  </div>
+
+  <!-- =============== STEP 1 =============== -->
+  <section id="step-1" class="step-section">
+    <div class="panel">
+      <h2>Arquivos</h2>
+      <p class="hint">Envie a planilha de entregas e, se tiver, o book histórico de rotas — ele ajuda a classificar bairros novos que ainda não estão no dicionário de regiões.</p>
+      <div class="upload-row">
+        <label class="upload-zone" id="dz-previa">
+          <input type="file" id="file-previa" accept=".xlsx,.xls">
+          <span class="upload-icon">📄</span>
+          <div class="upload-label"><strong>Planilha de entregas</strong> (previa_routeasy)</div>
+          <div class="upload-hint">Obrigatório</div>
+          <div class="upload-filename" id="fn-previa"></div>
+        </label>
+        <label class="upload-zone" id="dz-hist">
+          <input type="file" id="file-hist" accept=".xlsx,.xls">
+          <span class="upload-icon">🗂️</span>
+          <div class="upload-label">Book histórico de rotas <span class="badge-opt">opcional</span></div>
+          <div class="upload-hint">Sugere região de bairros novos</div>
+          <div class="upload-filename" id="fn-hist"></div>
+        </label>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="btn-to-step2" disabled>Continuar →</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 2 =============== -->
+  <section id="step-2" class="step-section hidden">
+    <div class="panel">
+      <h2>Ajustes antes de processar</h2>
+      <p class="hint">Esses valores são aplicados automaticamente — revise antes de continuar.</p>
+      <div class="cfg-grid">
+        <div class="cfg-block">
+          <h3>Janela de descarga — padrão quando não houver horário na observação</h3>
+          <div class="cfg-row"><label>Início</label><input type="time" id="cfg-janela-inicio" value="08:00"></div>
+          <div class="cfg-row"><label>Fim</label><input type="time" id="cfg-janela-fim" value="15:00"></div>
+        </div>
+        <div class="cfg-block">
+          <h3>Tempo de atendimento no cliente (min.)</h3>
+          <p class="hint" style="margin-bottom:8px;">Segmentos com tempo reduzido (já vêm marcados: Distribuidor, Food Service, Venda Direta, Feira). Desmarque/marque conforme necessário.</p>
+          <div class="seg-list" id="seg-list"></div>
+          <div class="cfg-row"><label>Minutos — segmentos marcados</label><input type="number" id="cfg-tempo-selecionados" value="20" min="0" step="5"></div>
+          <div class="cfg-row"><label>Minutos — demais segmentos</label><input type="number" id="cfg-tempo-outros" value="60" min="0" step="5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="1">← Voltar</button>
+      <button class="primary" id="btn-to-step3">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 3 =============== -->
+  <section id="step-3" class="step-section hidden">
+    <div class="panel">
+      <h2>Processando</h2>
+      <p class="hint">Janelas de horário, CEP e tempo de atendimento são aplicados agora. Endereços e região ficam para as próximas etapas, com sua validação.</p>
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-node" data-node="horarios"><div class="pipe-line"></div><div class="circle"></div>Horários</div>
+        <div class="pipe-node" data-node="cep"><div class="pipe-line"></div><div class="circle"></div>CEP</div>
+        <div class="pipe-node" data-node="endereco"><div class="pipe-line"></div><div class="circle"></div>Endereços (detectar)</div>
+        <div class="pipe-node" data-node="bairro"><div class="pipe-line"></div><div class="circle"></div>Bairros vazios</div>
+        <div class="pipe-node" data-node="tempo"><div class="pipe-line"></div><div class="circle"></div>Tempo atend.</div>
+      </div>
+      <div class="log-panel"><div id="log"></div></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="2">← Voltar</button>
+      <button class="primary" id="btn-process">▶ Processar planilha</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 4 =============== -->
+  <section id="step-4" class="step-section hidden">
+    <div class="panel">
+      <h2>Revisar endereços antes de aplicar</h2>
+      <p class="hint">Confira os endereços encontrados dentro da observação. Tudo o que der para preencher automaticamente (rua, número, CEP, bairro, cidade) já vem pronto — corrija o que precisar antes de aplicar.</p>
+      <div class="cards" id="summary-cards-4"></div>
+      <div class="tabs" id="tabs-4">
+        <div class="tab active" data-tab="enderecos">Endereços candidatos</div>
+        <div class="tab" data-tab="janelas">Janelas com +2 horários</div>
+      </div>
+      <div class="tab-panel active" id="tab-enderecos"><div class="tbl-wrap"><table class="rev" id="tbl-enderecos"></table></div></div>
+      <div class="tab-panel" id="tab-janelas"><div class="tbl-wrap"><table class="rev" id="tbl-janelas"></table></div></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="3">← Voltar</button>
+      <button class="primary" id="btn-to-step5">Aplicar endereços e continuar →</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 5 =============== -->
+  <section id="step-5" class="step-section hidden">
+    <div class="panel">
+      <h2>Alocação por região</h2>
+      <p class="hint">Com os endereços já corrigidos, agora cada cliente é classificado na macrorregião de entrega — a base para o trabalho de roteirização.</p>
+      <div class="cards" id="summary-cards-5"></div>
+      <div class="tabs" id="tabs-5">
+        <div class="tab active" data-tab="resumo-regiao">Resumo por região</div>
+        <div class="tab" data-tab="regioes">Regiões não resolvidas</div>
+      </div>
+      <div class="tab-panel active" id="tab-resumo-regiao"><div id="resumo-regiao-list"></div></div>
+      <div class="tab-panel" id="tab-regioes"><div class="tbl-wrap"><table class="rev" id="tbl-regioes"></table></div></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="4">← Voltar</button>
+      <button class="primary" id="btn-to-step6">Confirmar alocação →</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 6 =============== -->
+  <section id="step-6" class="step-section hidden">
+    <div class="panel">
+      <h2>Exportar planilha final</h2>
+      <p class="hint">Tudo pronto. Baixe o arquivo já com janelas, CEP, endereços, bairro, região e tempo de atendimento preenchidos.</p>
+      <button class="ok" id="btn-export">⬇ Gerar e baixar planilha (.xlsx)</button>
+      <p class="footnote" id="export-status"></p>
+    </div>
+    <div class="panel">
+      <h2>Resumo final por região</h2>
+      <div id="resumo-final-list"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="5">← Voltar</button>
+      <button class="secondary" id="btn-restart">Começar novo arquivo</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="raiar-footer">© Raiar Orgânicos S.A. · Uso interno · Prep. Routeasy</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+
+/* =====================================================================
+   UTILIDADES DE TEXTO
+   ===================================================================== */
+function normText(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+}
+function titleCase(s){
+  if (!s) return s;
+  return String(s).trim().replace(/\s+/g,' ').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+}
+
+/* =====================================================================
+   JANELAS DE HORÁRIO
+   ===================================================================== */
+function parseTimeToken(tok) {
+  tok = tok.trim();
+  let m = tok.match(/^(\d{1,2})[:.](\d{2})$/);
+  let h, mi;
+  if (m) { h = parseInt(m[1], 10); mi = parseInt(m[2], 10); }
+  else {
+    m = tok.match(/^(\d{1,2})$/);
+    if (!m) return null;
+    h = parseInt(m[1], 10); mi = 0;
+  }
+  if (h > 23 || mi > 59) return null;
+  return [h, mi];
+}
+function fmtTime(h, mi) { return String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0'); }
+
+const TIME_RE_SRC = '(\\d{1,2}(?:[:.]\\d{2})?)\\s*(?:hs|hrs|h)?';
+const CONN_RE_SRC = '(?:at[ée]\\s+as|at[ée]|as|às|à|ao|a)';
+
+function extractWindows(text) {
+  if (!text || typeof text !== 'string') return [];
+  const RANGE_RE = new RegExp(TIME_RE_SRC + '\\s*' + CONN_RE_SRC + '\\s*' + TIME_RE_SRC, 'gi');
+  const DASH_RE = /(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/g;
+  const windows = [];
+  const covered = [];
+  let m;
+  while ((m = DASH_RE.exec(text)) !== null) {
+    const t1 = parseTimeToken(m[1]);
+    const t2 = parseTimeToken(m[2]);
+    if (t1 && t2) {
+      windows.push([fmtTime(...t1), fmtTime(...t2)]);
+      covered.push([m.index, m.index + m[0].length]);
+    }
+  }
+  while ((m = RANGE_RE.exec(text)) !== null) {
+    const start = m.index, end = m.index + m[0].length;
+    if (covered.some(c => start < c[1] && end > c[0])) continue;
+    const t1 = parseTimeToken(m[1]);
+    const t2 = parseTimeToken(m[2]);
+    if (t1 && t2) windows.push([fmtTime(...t1), fmtTime(...t2)]);
+  }
+  return windows;
+}
+
+/* =====================================================================
+   CEP
+   ===================================================================== */
+function standardizeCep(raw) {
+  if (raw === null || raw === undefined || String(raw).trim() === '') return null;
+  let digits = String(raw).replace(/\D/g, '');
+  if (!digits) return null;
+  digits = digits.padStart(8, '0').slice(-8);
+  return digits.slice(0, 5) + '-' + digits.slice(5);
+}
+
+/* =====================================================================
+   ENDEREÇOS JÁ PESQUISADOS MANUALMENTE (CEP + bairro confirmados via Correios)
+   ===================================================================== */
+const ENDERECOS_CONHECIDOS = [
+  { contem: 'ABILIO SOARES', numero: '1770', cep: '04005005', bairro: 'Paraíso' },
+  { contem: 'JOSE GENEROZO', numero: '73', cep: '02992160', bairro: 'Parque Panamericano' },
+  { contem: 'DINO BUENO', numero: '94', cep: '01217000', bairro: 'Campos Elíseos' },
+  { contem: 'MARSELHA', numero: '541', cep: '05332000', bairro: 'Jaguaré' },
+  { contem: 'JOSE MOREIRA FRAGA', numero: '498', cep: '02992170', bairro: 'Parque Panamericano' },
+  { contem: 'PLINIO CAVALCANTI', numero: '314', cep: '03569020', bairro: 'Parque Artur Alvim' },
+  { contem: 'ALTEROSAS', numero: '64', cep: '03544070', bairro: 'Cidade Patriarca' },
+  { contem: 'MIGUEL RACHID', numero: '222', cep: '03808130', bairro: 'Vila Paranaguá' },
+  { contem: 'DOMINGOS FERNANDES NOBRE', numero: '750', cep: '08190300', bairro: 'Vila Itaim' },
+  { contem: 'RIO MANOEL ALVES', numero: '369', cep: '08190450', bairro: 'Vila Itaim' },
+  { contem: 'JOAO BATISTA BERNARDES DE LIMA', numero: '135', cep: '05141000', bairro: 'Chácara Inglesa' },
+  { contem: 'AIRES MARTINS TORRES', numero: '180', cep: '05352060', bairro: 'Vila São Francisco' },
+  { contem: 'ARAGUARI', numero: '661', cep: '04514041', bairro: 'Vila Uberabinha' },
+  { contem: 'ANTONIA DE QUEIROS', numero: '103', cep: '01307013', bairro: 'Consolação' },
+  { contem: 'MURMURIOS DA TARDE', numero: '220', cep: '08253580', bairro: 'Conjunto Residencial José Bonifácio' },
+  { contem: 'ALFREDO GUEDES', numero: '40', cep: '02034010', bairro: 'Santana' },
+  { contem: 'AIMBERE', numero: '1749', cep: '01258020', bairro: 'Sumaré' },
+  { contem: 'ALBERTO SEABRA', numero: '998', cep: '05452001', bairro: 'Vila Madalena' },
+  { contem: 'ANGELICA', numero: '2635', cep: '01227200', bairro: 'Consolação' },
+  { contem: 'RAULINO GALDINO DA SILVA', numero: '72', cep: '02807000', bairro: 'Freguesia do Ó' },
+  { contem: 'CORSABAD', numero: '279', cep: '04858260', bairro: 'Jardim São Judas Tadeu' },
+  { contem: 'HARMONIA', numero: '1250', cep: '05435000', bairro: 'Sumarezinho' },
+  { contem: 'ALMEIDA TORRES', numero: '119', cep: '01530010', bairro: 'Aclimação' },
+];
+function lookupEnderecoConhecido(rua, numero) {
+  if (!rua) return null;
+  const ruaN = normText(rua);
+  const numN = String(numero || '').replace(/[^0-9]/g, '');
+  const hit = ENDERECOS_CONHECIDOS.find(e => ruaN.includes(e.contem) && numN === e.numero);
+  return hit || null;
+}
+
+/* =====================================================================
+   ENDEREÇO EMBUTIDO NA OBSERVAÇÃO
+   ===================================================================== */
+function findCepCandidate(text) {
+  let m = text.match(/(?<!\d)(\d{2}\.\d{3}-\d{3}|\d{5}-\d{3})(?!\d)/);
+  if (m) return m[1].replace(/\D/g, '');
+  m = text.match(/CEP[:.\s]{1,5}(\d{2}\.?\d{3}-?\d{3})(?!\d)/i);
+  if (m) return m[1].replace(/\D/g, '');
+  const bareRe = /(?<!\d)(\d{8})(?!\d)/g;
+  let mm;
+  while ((mm = bareRe.exec(text)) !== null) {
+    const antes = text.slice(Math.max(0, mm.index - 30), mm.index).toUpperCase();
+    if (/PROC|PROCESSO|CONVENIO|CONTRATO|TERM\.|N[ºO°]\s*\d|OC\d|PEDIDO|CNPJ|\d\/\d{4}|\.\s*$/.test(antes)) continue;
+    return mm[1];
+  }
+  return null;
+}
+
+const CIDADES_CONHECIDAS = ['SAO PAULO','OSASCO','BARUERI','JANDIRA','TABOAO DA SERRA','SAO CAETANO',
+                             'SAO BERNARDO','GUARULHOS','DIADEMA','SANTO ANDRE','MAUA','COTIA','EMBU'];
+
+function extractAddressFromObs(text) {
+  if (!text || typeof text !== 'string') return null;
+
+  const cepDigits = findCepCandidate(text);
+
+  const streetRe = /\b(Rua|R\.?|Avenida|Av\.?|Alameda|Al\.?|Estrada|Travessa)\s+([A-Za-zÀ-ú0-9º°ª'\.\s]{3,60}?)[,]?\s+(\d{1,6}[A-Za-z]?)\b/i;
+  const streetMatch = text.match(streetRe);
+  if (!streetMatch && !cepDigits) return null;
+
+  let rua = null, numero = null;
+  if (streetMatch) {
+    rua = titleCase(streetMatch[1].replace(/\.$/, '')) + ' ' + titleCase(streetMatch[2].trim().replace(/\s+/g, ' '));
+    numero = streetMatch[3];
+  }
+
+  let cep = cepDigits;
+  let bairro = null;
+  const conhecido = rua ? lookupEnderecoConhecido(rua, numero) : null;
+  if (conhecido) {
+    if (!cep) cep = conhecido.cep;
+    bairro = conhecido.bairro;
+  }
+
+  // se ainda não achou o bairro, procura o nome de algum bairro conhecido
+  // mencionado livremente no texto (ex.: "...352 Ap 82 A Perdizes Cep 05017-000")
+  if (!bairro) {
+    const textN = normText(text);
+    const chaves = Object.keys(BAIRRO_MACRO).sort((a, b) => b.length - a.length);
+    for (const chave of chaves) {
+      const re = new RegExp('\\b' + chave.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
+      if (re.test(textN)) { bairro = titleCase(chave); break; }
+    }
+  }
+
+  // cidade mencionada explicitamente no texto
+  let cidade = null;
+  const textN = normText(text);
+  for (const c of CIDADES_CONHECIDAS) {
+    if (textN.includes(c)) { cidade = titleCase(c); break; }
+  }
+  // se não há cidade no texto mas achamos um endereço real (rua ou CEP), assume São Paulo —
+  // padrão observado em 100% dos casos reais deste dataset. Sempre editável na revisão.
+  if (!cidade && (rua || cep)) cidade = 'São Paulo';
+
+  return {
+    rua, numero, cep, bairro, cidade,
+    confidence: (rua && numero) ? 'high' : 'low',
+  };
+}
+
+/* =====================================================================
+   DICIONÁRIO DE MACRORREGIÕES (SP capital)
+   ===================================================================== */
+const BAIRRO_MACRO = {
+  'BELA VISTA':'Centro','CAMBUCI':'Centro','CAMPOS ELISEOS':'Centro','CENTRO':'Centro',
+  'CONSOLACAO':'Centro','HIGIENOPOLIS':'Centro','LIBERDADE':'Centro','REPUBLICA':'Centro',
+  'SANTA CECILIA':'Centro','SE':'Centro','BOM RETIRO':'Centro','VILA BUARQUE':'Centro','ACLIMACAO':'Centro',
+
+  'AGUA BRANCA':'Oeste - Lapa/Perdizes/V.Leopoldina','ALTO DA LAPA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'BARRA FUNDA':'Oeste - Lapa/Perdizes/V.Leopoldina','LAPA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'PERDIZES':'Oeste - Lapa/Perdizes/V.Leopoldina','JAGUARA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'JAGUARE':'Oeste - Lapa/Perdizes/V.Leopoldina','VILA LEOPOLDINA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'MERC DIST LAPA':'Oeste - Lapa/Perdizes/V.Leopoldina','SUMARE':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'SUMAREZINHO':'Oeste - Lapa/Perdizes/V.Leopoldina','POMPEIA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'VILA RIBEIRO DE BARROS':'Oeste - Lapa/Perdizes/V.Leopoldina','VILA HAMBURGUESA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'BELA ALIANCA':'Oeste - Lapa/Perdizes/V.Leopoldina','VILA ROMANA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+  'VL ROMANA':'Oeste - Lapa/Perdizes/V.Leopoldina',
+
+  'PINHEIROS':'Oeste - Pinheiros/V.Madalena/Alto Pinheiros','ALTO DE PINHEIROS':'Oeste - Pinheiros/V.Madalena/Alto Pinheiros',
+  'VILA MADALENA':'Oeste - Pinheiros/V.Madalena/Alto Pinheiros','JARDIM DAS BANDEIRAS':'Oeste - Pinheiros/V.Madalena/Alto Pinheiros',
+  'JARDIM PETROPOLIS':'Oeste - Pinheiros/V.Madalena/Alto Pinheiros',
+
+  'ITAIM BIBI':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao','JARDIM PAULISTA':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao',
+  'JARDIM PAULISTANO':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao','VILA NOVA CONCEICAO':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao',
+  'CERQUEIRA CESAR':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao','VILA OLIMPIA':'Oeste - Itaim Bibi/Jardins/V.N.Conceicao',
+
+  'BUTANTA':'Oeste - Butantã/Morumbi','MORUMBI':'Oeste - Butantã/Morumbi','RAPOSO TAVARES':'Oeste - Butantã/Morumbi',
+  'VILA SONIA':'Oeste - Butantã/Morumbi','JARDIM BONFIGLIOLI':'Oeste - Butantã/Morumbi',
+  'JARDIM PINHEIRO':'Oeste - Butantã/Morumbi','JARDIM UNIVERSIDADE PINHEIROS':'Oeste - Butantã/Morumbi',
+  'VILA INDIANA':'Oeste - Butantã/Morumbi','VILA SAO FRANCISCO':'Oeste - Butantã/Morumbi',
+  'CIDADE SAO FRANCISCO':'Oeste - Butantã/Morumbi','VILA AMERICANA':'Oeste - Butantã/Morumbi',
+  'RIO PEQUENO':'Oeste - Butantã/Morumbi','JARDIM ESMERALDA':'Oeste - Butantã/Morumbi',
+  'VILA PROGREDIOR':'Oeste - Butantã/Morumbi','VILA SUZANA':'Oeste - Butantã/Morumbi',
+  'JARDIM PERI PERI':'Oeste - Butantã/Morumbi','JARDIM PERI-PERI':'Oeste - Butantã/Morumbi',
+  'JARDIM PERIPERI':'Oeste - Butantã/Morumbi','JD PERIPERI':'Oeste - Butantã/Morumbi',
+  'JD PERI PERI':'Oeste - Butantã/Morumbi',
+
+  'VILA MARIANA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','SAUDE':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'MOEMA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','INDIANOPOLIS':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'MIRANDOPOLIS':'Sul - V.Mariana/Ipiranga/Sto.Amaro','PARAISO':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'PLANALTO PAULISTA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','CURSINO':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'IPIRANGA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','SACOMA':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'SANTO AMARO':'Sul - V.Mariana/Ipiranga/Sto.Amaro','CAMPO BELO':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'CAMPO GRANDE':'Sul - V.Mariana/Ipiranga/Sto.Amaro','BROOKLIN':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'CHACARA SANTO ANTONIO':'Sul - V.Mariana/Ipiranga/Sto.Amaro','VILA GERTRUDES':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'VILA PAULISTA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','JARDIM SANTO AMARO':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'VILA UBERABINHA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','JABAQUARA':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'VILA SANTA CATARINA':'Sul - V.Mariana/Ipiranga/Sto.Amaro','VILA ALEXANDRIA':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'VILA MASCOTE':'Sul - V.Mariana/Ipiranga/Sto.Amaro','VILA FIRMIANO PINTO':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+  'BROOKLIN PAULISTA':'Sul - V.Mariana/Ipiranga/Sto.Amaro',
+
+  'SOCORRO':'Sul - Capela do Socorro/Grajau','GRAJAU':'Sul - Capela do Socorro/Grajau',
+  'CIDADE DUTRA':'Sul - Capela do Socorro/Grajau','JARDIM SAO JUDAS TADEU':'Sul - Capela do Socorro/Grajau',
+
+  "CIDADE ADEMAR":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo","PEDREIRA":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo",
+  "CAMPO LIMPO":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo","CAPAO REDONDO":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo",
+  "JARDIM ANGELA":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo","JARDIM SAO LUIS":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo",
+  "PARELHEIROS":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo","MARSILAC":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo",
+  "JARDIM ROSCHEL":"Sul - C.Ademar/M'Boi Mirim/Campo Limpo",
+
+  'SANTANA':'Norte - Santana/Casa Verde/V.Maria','MANDAQUI':'Norte - Santana/Casa Verde/V.Maria',
+  'TUCURUVI':'Norte - Santana/Casa Verde/V.Maria','CARANDIRU':'Norte - Santana/Casa Verde/V.Maria',
+  'CASA VERDE':'Norte - Santana/Casa Verde/V.Maria','CASA VERDE ALTA':'Norte - Santana/Casa Verde/V.Maria',
+  'CACHOEIRINHA':'Norte - Santana/Casa Verde/V.Maria','LIMAO':'Norte - Santana/Casa Verde/V.Maria',
+  'JARDIM SAO BENTO':'Norte - Santana/Casa Verde/V.Maria','VILA MARIA':'Norte - Santana/Casa Verde/V.Maria',
+  'VILA GUILHERME':'Norte - Santana/Casa Verde/V.Maria','VILA MEDEIROS':'Norte - Santana/Casa Verde/V.Maria',
+  'PQ.NOVO MUNDO':'Norte - Santana/Casa Verde/V.Maria','PARQUE NOVO MUNDO':'Norte - Santana/Casa Verde/V.Maria',
+  'JARDIM JAPAO':'Norte - Santana/Casa Verde/V.Maria',
+
+  'PIRITUBA':'Norte - Pirituba/Freguesia','JARAGUA':'Norte - Pirituba/Freguesia',
+  'SAO DOMINGOS':'Norte - Pirituba/Freguesia','FREGUESIA DO O':'Norte - Pirituba/Freguesia',
+  'BRASILANDIA':'Norte - Pirituba/Freguesia','CHACARA INGLESA':'Norte - Pirituba/Freguesia',
+  'PARQUE PANAMERICANO':'Norte - Pirituba/Freguesia',
+
+  'PERUS':'Norte - Perus/Jaçanã/Tremembé','ANHANGUERA':'Norte - Perus/Jaçanã/Tremembé',
+  'JACANA':'Norte - Perus/Jaçanã/Tremembé','TREMEMBE':'Norte - Perus/Jaçanã/Tremembé',
+
+  'BRAS':'Leste - Mooca/Tatuapé/Aricanduva/Penha','AGUA RASA':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'MOOCA':'Leste - Mooca/Tatuapé/Aricanduva/Penha','PARQUE DA MOOCA':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'PARI':'Leste - Mooca/Tatuapé/Aricanduva/Penha','BELEM':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'BELENZINHO':'Leste - Mooca/Tatuapé/Aricanduva/Penha','TATUAPE':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'VILA INVERNADA':'Leste - Mooca/Tatuapé/Aricanduva/Penha','CARRAO':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'ARICANDUVA':'Leste - Mooca/Tatuapé/Aricanduva/Penha','VILA FORMOSA':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'VILA CARRAO':'Leste - Mooca/Tatuapé/Aricanduva/Penha','PENHA':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'CANGAIBA':'Leste - Mooca/Tatuapé/Aricanduva/Penha','VILA MATILDE':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'ARTUR ALVIM':'Leste - Mooca/Tatuapé/Aricanduva/Penha','PARQUE ARTUR ALVIM':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+  'VILA PARANAGUA':'Leste - Mooca/Tatuapé/Aricanduva/Penha','CIDADE PATRIARCA':'Leste - Mooca/Tatuapé/Aricanduva/Penha',
+
+  'ITAQUERA':'Leste - Itaquera/V.Prudente/Sapopemba','PARQUE DO CARMO':'Leste - Itaquera/V.Prudente/Sapopemba',
+  'CIDADE LIDER':'Leste - Itaquera/V.Prudente/Sapopemba','JOSE BONIFACIO':'Leste - Itaquera/V.Prudente/Sapopemba',
+  'CONJUNTO RESIDENCIAL JOSE BONIFACIO':'Leste - Itaquera/V.Prudente/Sapopemba',
+  'VILA PRUDENTE':'Leste - Itaquera/V.Prudente/Sapopemba','SAO LUCAS':'Leste - Itaquera/V.Prudente/Sapopemba',
+  'SAPOPEMBA':'Leste - Itaquera/V.Prudente/Sapopemba','VILA PRIMAVERA':'Leste - Itaquera/V.Prudente/Sapopemba',
+  'JARDIM BRASILIA':'Leste - Itaquera/V.Prudente/Sapopemba','JARDIM BRASILIA (ZONA LESTE)':'Leste - Itaquera/V.Prudente/Sapopemba',
+
+  'SAO MIGUEL':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','SAO MIGUEL PAULISTA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+  'VILA JACUI':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','JARDIM HELENA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+  'VILA ITAIM':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','ITAIM PAULISTA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+  'VILA CURUCA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','ERMELINO MATARAZZO':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+  'PONTE RASA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','GUAIANASES':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+  'LAJEADO':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases','VILA NOVA CURUCA':'Leste - S.Miguel/Itaim Pta/Ermelino/Guaianases',
+
+  'SAO MATEUS':'Leste - São Mateus/Cidade Tiradentes','SAO RAFAEL':'Leste - São Mateus/Cidade Tiradentes',
+  'IGUATEMI':'Leste - São Mateus/Cidade Tiradentes','CIDADE TIRADENTES':'Leste - São Mateus/Cidade Tiradentes',
+};
+const BAIRRO_PREFIXOS = [['CHACARA SANTO ANTONIO', 'Sul - V.Mariana/Ipiranga/Sto.Amaro']];
+
+// Às vezes o nome de um município vizinho aparece digitado no campo Bairro
+// (por engano), enquanto o campo Cidade ainda diz "São Paulo". Nesses casos,
+// tratamos o valor como a cidade real.
+const MUNICIPIOS_DISFARCADOS_DE_BAIRRO = [
+  'EMBU DAS ARTES', 'EMBU', 'TABOAO DA SERRA', 'OSASCO', 'BARUERI', 'JANDIRA',
+  'COTIA', 'CARAPICUIBA', 'ITAPEVI', 'SANTANA DE PARNAIBA', 'DIADEMA',
+  'SAO BERNARDO DO CAMPO', 'SAO CAETANO DO SUL', 'GUARULHOS', 'MAUA', 'FERRAZ DE VASCONCELOS',
+];
+
+// Remove acentos mantendo a capitalização — usado para padronizar os nomes de
+// região exibidos, evitando duplicidade por variação de acentuação na base.
+function stripAccents(s) {
+  if (!s) return s;
+  return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+const CIDADES_ABCDM = ['SANTO ANDRE', 'SAO BERNARDO DO CAMPO', 'SAO CAETANO DO SUL', 'DIADEMA', 'MAUA'];
+
+function getMacroRegiao(bairro, cidade, historicoSuggestions) {
+  const cidadeN = normText(cidade);
+  const bairroN = normText(bairro);
+  let result;
+  if (MUNICIPIOS_DISFARCADOS_DE_BAIRRO.includes(bairroN)) {
+    result = { regiao: titleCase(bairro), fonte: 'bairro-e-cidade' };
+  } else if (CIDADES_ABCDM.includes(cidadeN)) {
+    result = { regiao: 'SP-ABCDM', fonte: 'abcdm' };
+  } else if (cidadeN && cidadeN !== 'SAO PAULO') {
+    result = { regiao: titleCase(cidade), fonte: 'cidade' };
+  } else if (!bairroN) {
+    result = { regiao: null, fonte: 'sem-bairro' };
+  } else if (BAIRRO_MACRO[bairroN]) {
+    result = { regiao: BAIRRO_MACRO[bairroN], fonte: 'dicionario' };
+  } else {
+    result = null;
+    for (const [prefixo, macro] of BAIRRO_PREFIXOS) {
+      if (bairroN.startsWith(prefixo)) { result = { regiao: macro, fonte: 'dicionario-prefixo' }; break; }
+    }
+    if (!result && historicoSuggestions && historicoSuggestions[bairroN]) {
+      result = { regiao: historicoSuggestions[bairroN].regiao, fonte: 'historico', votos: historicoSuggestions[bairroN].votos };
+    }
+    if (!result) result = { regiao: null, fonte: 'nao-encontrado' };
+  }
+  if (result.regiao) result.regiao = stripAccents(result.regiao);
+  return result;
+}
+
+/* =====================================================================
+   SEGMENTO -> código
+   ===================================================================== */
+function segmentoCodigo(seg) {
+  if (!seg) return null;
+  const m = String(seg).trim().match(/^(\d{1,2})/);
+  return m ? m[1].padStart(2, '0') : null;
+}
+const SEGMENTOS_REDUZIDOS_PADRAO = ['07', '12', '13', '14']; // FS-Food Service, Distribuidor, Venda Direta, Feira
+
+/* =====================================================================
+   LEITURA / ESCRITA DE PLANILHA (SheetJS)
+   ===================================================================== */
+const COLUMN_CANDIDATES = {
+  dataEntrega: ['DATA ENTREGA', 'DATA DE ENTREGA'],
+  segmento: ['SEGMENTO'],
+  cliente: ['CLIENTE'],
+  endereco: ['ENDERECO'],
+  numero: ['NUMERO'],
+  complemento: ['COMPLEMENTO'],
+  cep: ['CEP'],
+  bairro: ['BAIRRO'],
+  cidade: ['CIDADE'],
+  estado: ['ESTADO'],
+  observacoes: ['OBSERVACOES', 'OBSERVACAO'],
+  idRota: ['ID_ROTA_1', 'IDROTA1', 'ID ROTA 1'],
+};
+function normalizeHeader(h) { return normText(h).replace(/\s+/g, ' '); }
+function buildColumnMap(headerRow) {
+  const map = {};
+  const normalized = headerRow.map(normalizeHeader);
+  for (const [key, candidates] of Object.entries(COLUMN_CANDIDATES)) {
+    let idx = -1;
+    for (const cand of candidates) { idx = normalized.indexOf(cand); if (idx !== -1) break; }
+    if (idx === -1) {
+      for (const cand of candidates) { idx = normalized.findIndex(h => h.includes(cand)); if (idx !== -1) break; }
+    }
+    map[key] = idx;
+  }
+  map.inicio1 = normalized.findIndex(h => h.includes('INTERVALO') && h.includes('INICIO') && h.includes('1'));
+  map.fim1 = normalized.findIndex(h => h.includes('INTERVALO') && h.includes('FIM') && h.includes('1'));
+  map.inicio2 = normalized.findIndex(h => h.includes('INTERVALO') && h.includes('INICIO') && h.includes('2'));
+  map.fim2 = normalized.findIndex(h => h.includes('INTERVALO') && h.includes('FIM') && h.includes('2'));
+  map.tempoAtendimento = normalized.findIndex(h => h.includes('TEMPO') && h.includes('ATENDIMENTO'));
+  map.regiao = normalized.findIndex(h => h === 'REGIAO' || h.includes('REGIAO'));
+  return map;
+}
+const STANDARD_HEADERS = {
+  inicio1: 'INICIO DO INTERVALO PERMITIDO 1', fim1: 'FIM DO INTERVALO PERMITIDO 1',
+  inicio2: 'INICIO DO INTERVALO PERMITIDO 2', fim2: 'FIM DO INTERVALO PERMITIDO 2',
+  tempoAtendimento: 'TEMPO DE ATENDIMENTO NO CLIENTE (MIN.)', regiao: 'REGIAO',
+};
+function ensureColumns(headerRow, colMap) {
+  for (const key of ['inicio1', 'fim1', 'inicio2', 'fim2', 'tempoAtendimento', 'regiao']) {
+    if (colMap[key] === -1) { headerRow.push(STANDARD_HEADERS[key]); colMap[key] = headerRow.length - 1; }
+  }
+}
+function readWorkbookFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array', cellDates: false });
+        const firstSheet = wb.SheetNames[0];
+        const ws = wb.Sheets[firstSheet];
+        const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: null });
+        resolve({ aoa, sheetName: firstSheet });
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/* =====================================================================
+   BOOK HISTÓRICO — sugestão de região p/ bairros não mapeados
+   ===================================================================== */
+function buildHistoricoSuggestions(histAoa) {
+  if (!histAoa || histAoa.length < 2) return {};
+  const header = histAoa[0];
+  const colMap = buildColumnMap(header);
+  if (colMap.bairro === -1 || colMap.idRota === -1) return {};
+  const rotas = {};
+  for (let i = 1; i < histAoa.length; i++) {
+    const row = histAoa[i];
+    const bairro = colMap.bairro !== -1 ? row[colMap.bairro] : null;
+    const idRota = colMap.idRota !== -1 ? row[colMap.idRota] : null;
+    const data = colMap.dataEntrega !== -1 ? row[colMap.dataEntrega] : '';
+    if (!bairro || !idRota || idRota === '#N/A') continue;
+    const key = String(data) + '|' + String(idRota);
+    const bn = normText(bairro);
+    if (!rotas[key]) rotas[key] = new Set();
+    rotas[key].add(bn);
+  }
+  const votos = {};
+  for (const bairros of Object.values(rotas)) {
+    const arr = Array.from(bairros);
+    const mapeados = arr.filter(b => BAIRRO_MACRO[b]).map(b => BAIRRO_MACRO[b]);
+    if (mapeados.length === 0) continue;
+    for (const b of arr) {
+      if (BAIRRO_MACRO[b]) continue;
+      if (!votos[b]) votos[b] = {};
+      for (const regiao of mapeados) votos[b][regiao] = (votos[b][regiao] || 0) + 1;
+    }
+  }
+  const suggestions = {};
+  for (const [bairro, contagem] of Object.entries(votos)) {
+    let melhor = null, melhorN = 0;
+    for (const [regiao, n] of Object.entries(contagem)) if (n > melhorN) { melhor = regiao; melhorN = n; }
+    if (melhor) suggestions[bairro] = { regiao: melhor, votos: melhorN };
+  }
+  return suggestions;
+}
+
+/* =====================================================================
+   VIACEP
+   ===================================================================== */
+async function lookupCep(cep8) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    let resp;
+    try { resp = await fetch(`https://viacep.com.br/ws/${cep8}/json/`, { signal: controller.signal }); }
+    finally { clearTimeout(timeoutId); }
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json.erro) return null;
+    return { bairro: json.bairro || null, cidade: json.localidade || null, uf: json.uf || null };
+  } catch (e) { return null; }
+}
+async function lookupCepBatch(ceps, concurrency, onProgress) {
+  const results = {};
+  const queue = ceps.slice();
+  let done = 0;
+  async function worker() {
+    while (queue.length) {
+      const cep = queue.shift();
+      if (!results[cep]) results[cep] = await lookupCep(cep);
+      done++;
+      if (onProgress) onProgress(done, ceps.length);
+    }
+  }
+  const workers = [];
+  for (let i = 0; i < concurrency; i++) workers.push(worker());
+  await Promise.all(workers);
+  return results;
+}
+
+/* =====================================================================
+   ESTADO GLOBAL
+   ===================================================================== */
+const STATE = {
+  previaAoa: null, histAoa: null, header: null, colMap: null, rows: [],
+  cfg: { janelaInicio: '08:00', janelaFim: '15:00', segmentosReduzidos: new Set(SEGMENTOS_REDUZIDOS_PADRAO),
+         tempoSelecionados: 20, tempoOutros: 60 },
+  allSegments: [],
+  results: {
+    janelaPadraoCount: 0, janelaExtraCount: 0, janelaExtraRows: [],
+    cepCorrigidoCount: 0, enderecoCandidatos: [], bairroPreenchidoCount: 0,
+    regiaoContagem: {}, regiaoNaoResolvida: [], tempoReduzidoCount: 0, tempoOutrosCount: 0,
+    totalLinhas: 0,
+  },
+  historicoSuggestions: {},
+};
+
+function log(msg) {
+  const el = document.getElementById('log');
+  const time = new Date().toLocaleTimeString('pt-BR');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.textContent = `[${time}] ${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function setNode(name, state) {
+  const el = document.querySelector(`.pipe-node[data-node="${name}"]`);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  if (state) el.classList.add(state);
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =====================================================================
+   PIPELINE — ETAPA 3 (janelas, CEP, detecção de endereços, bairro vazio, tempo)
+   ===================================================================== */
+async function runPipelineStep3() {
+  const R = STATE.results;
+  R.janelaPadraoCount = 0; R.janelaExtraCount = 0; R.janelaExtraRows = [];
+  R.cepCorrigidoCount = 0; R.enderecoCandidatos = []; R.bairroPreenchidoCount = 0;
+  R.tempoReduzidoCount = 0; R.tempoOutrosCount = 0;
+
+  const colMap = STATE.colMap;
+  const rows = STATE.rows;
+  R.totalLinhas = rows.length;
+
+  /* ---- horários ---- */
+  setNode('horarios', 'active');
+  for (const row of rows) {
+    const obs = colMap.observacoes !== -1 ? row[colMap.observacoes] : null;
+    const windows = extractWindows(obs);
+    if (windows.length > 2) { R.janelaExtraCount++; R.janelaExtraRows.push({ row, obs, windows }); }
+    if (windows.length >= 1) {
+      row[colMap.inicio1] = windows[0][0]; row[colMap.fim1] = windows[0][1];
+    } else {
+      row[colMap.inicio1] = STATE.cfg.janelaInicio; row[colMap.fim1] = STATE.cfg.janelaFim;
+      R.janelaPadraoCount++;
+    }
+    if (windows.length >= 2) { row[colMap.inicio2] = windows[1][0]; row[colMap.fim2] = windows[1][1]; }
+  }
+  log(`Janelas de horário: ${R.janelaPadraoCount} linha(s) sem horário na observação receberam o padrão ${STATE.cfg.janelaInicio}–${STATE.cfg.janelaFim}.`);
+  if (R.janelaExtraCount) log(`${R.janelaExtraCount} linha(s) com mais de 2 janelas no texto — só as 2 primeiras foram aplicadas.`);
+  setNode('horarios', 'done'); await sleep(120);
+
+  /* ---- CEP ---- */
+  setNode('cep', 'active');
+  if (colMap.cep !== -1) {
+    for (const row of rows) {
+      const original = row[colMap.cep];
+      if (original === null || original === undefined || String(original).trim() === '') continue;
+      const std = standardizeCep(original);
+      if (std && std !== original) { row[colMap.cep] = std; R.cepCorrigidoCount++; }
+    }
+  }
+  log(`CEP padronizado: ${R.cepCorrigidoCount} corrigido(s) para o formato XXXXX-XXX.`);
+  setNode('cep', 'done'); await sleep(120);
+
+  /* ---- endereços candidatos (só detecção, sem aplicar ainda) ---- */
+  setNode('endereco', 'active');
+  rows.forEach((row, idx) => {
+    const obs = colMap.observacoes !== -1 ? row[colMap.observacoes] : null;
+    const found = extractAddressFromObs(obs);
+    if (!found) return;
+    const atualCep = colMap.cep !== -1 ? row[colMap.cep] : null;
+    const atualCepDigits = atualCep ? String(atualCep).replace(/\D/g, '') : '';
+    const difereCep = found.cep && found.cep !== atualCepDigits;
+    const atualRua = colMap.endereco !== -1 ? row[colMap.endereco] : '';
+    const atualNumero = colMap.numero !== -1 ? row[colMap.numero] : '';
+    const mesmoEndereco = found.rua && enderecoJaBate(atualRua, atualNumero, found.rua, found.numero);
+    if ((found.rua && !mesmoEndereco) || difereCep) {
+      R.enderecoCandidatos.push({
+        rowIndex: idx,
+        cliente: colMap.cliente !== -1 ? row[colMap.cliente] : '',
+        obsSnippet: (obs || '').slice(0, 140),
+        atual: {
+          rua: atualRua, numero: atualNumero, cep: atualCep,
+          bairro: colMap.bairro !== -1 ? row[colMap.bairro] : '',
+          cidade: colMap.cidade !== -1 ? row[colMap.cidade] : '',
+        },
+        candidato: {
+          rua: found.rua, numero: found.numero,
+          cep: found.cep ? standardizeCep(found.cep) : null,
+          bairro: found.bairro, cidade: found.cidade,
+        },
+        confidence: found.confidence,
+        aplicar: found.confidence === 'high',
+      });
+    }
+  });
+  log(`Endereços candidatos encontrados na observação: ${R.enderecoCandidatos.length} (revisão na etapa 4).`);
+  setNode('endereco', 'done'); await sleep(120);
+
+  /* ---- bairro vazio (não relacionado a troca de endereço) via ViaCEP ---- */
+  setNode('bairro', 'active');
+  const cepsParaBuscar = [];
+  rows.forEach((row) => {
+    const bairro = colMap.bairro !== -1 ? row[colMap.bairro] : null;
+    const cep = colMap.cep !== -1 ? row[colMap.cep] : null;
+    if ((!bairro || String(bairro).trim() === '') && cep) {
+      const digits = String(cep).replace(/\D/g, '');
+      if (digits.length === 8) cepsParaBuscar.push(digits);
+    }
+  });
+  const cepsUnicos = Array.from(new Set(cepsParaBuscar));
+  if (cepsUnicos.length) {
+    log(`Consultando ViaCEP para ${cepsUnicos.length} CEP(s) sem bairro...`);
+    let lookups = {};
+    try {
+      lookups = await Promise.race([
+        lookupCepBatch(cepsUnicos, 6),
+        new Promise((resolve) => setTimeout(() => resolve({}), 20000)),
+      ]);
+    } catch (e) { lookups = {}; }
+    rows.forEach((row) => {
+      const bairro = colMap.bairro !== -1 ? row[colMap.bairro] : null;
+      const cep = colMap.cep !== -1 ? row[colMap.cep] : null;
+      if ((!bairro || String(bairro).trim() === '') && cep) {
+        const digits = String(cep).replace(/\D/g, '');
+        const info = lookups[digits];
+        if (info && info.bairro) {
+          row[colMap.bairro] = info.bairro;
+          if (colMap.cidade !== -1 && (!row[colMap.cidade] || String(row[colMap.cidade]).trim()==='') && info.cidade) row[colMap.cidade] = info.cidade;
+          R.bairroPreenchidoCount++;
+        }
+      }
+    });
+  }
+  log(`Bairros preenchidos via ViaCEP: ${R.bairroPreenchidoCount}.`);
+  setNode('bairro', 'done'); await sleep(120);
+
+  /* ---- tempo de atendimento ---- */
+  setNode('tempo', 'active');
+  rows.forEach((row) => {
+    const seg = colMap.segmento !== -1 ? row[colMap.segmento] : null;
+    const codigo = segmentoCodigo(seg);
+    if (codigo && STATE.cfg.segmentosReduzidos.has(codigo)) {
+      row[colMap.tempoAtendimento] = STATE.cfg.tempoSelecionados;
+      R.tempoReduzidoCount++;
+    } else {
+      row[colMap.tempoAtendimento] = STATE.cfg.tempoOutros;
+      R.tempoOutrosCount++;
+    }
+  });
+  log(`Tempo de atendimento: ${R.tempoReduzidoCount} linha(s) com ${STATE.cfg.tempoSelecionados} min (segmentos marcados), ${R.tempoOutrosCount} linha(s) com ${STATE.cfg.tempoOutros} min (demais).`);
+  setNode('tempo', 'done');
+
+  log('Concluído. Vá para a etapa 4 para revisar os endereços candidatos.');
+}
+
+// Compara o endereço já cadastrado nas colunas com o candidato extraído da
+// observação, ignorando prefixo (Rua/Av/etc.), acentos e caixa.
+function coreStreetName(s) {
+  if (!s) return '';
+  return normText(s).replace(/^(RUA|AVENIDA|AV|ALAMEDA|AL|ESTRADA|TRAVESSA|R)\.?\s+/, '').trim();
+}
+function enderecoJaBate(atualRua, atualNumero, candRua, candNumero) {
+  const a = coreStreetName(atualRua), c = coreStreetName(candRua);
+  if (!a || !c) return false;
+  const numA = String(atualNumero || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  const numC = String(candNumero || '').replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  return a === c && (!numC || numA === numC);
+}
+
+/* =====================================================================
+   NAVEGAÇÃO
+   ===================================================================== */
+function goToStep(n) {
+  document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('step-' + n).classList.remove('hidden');
+  document.querySelectorAll('.step-card').forEach(s => {
+    const step = parseInt(s.dataset.step, 10);
+    s.classList.remove('active', 'done');
+    if (step < n) s.classList.add('done');
+    if (step === n) s.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => goToStep(parseInt(btn.dataset.back, 10)));
+});
+
+/* =====================================================================
+   ETAPA 1 — UPLOAD
+   ===================================================================== */
+function checkStep1Ready() { document.getElementById('btn-to-step2').disabled = !STATE.previaAoa; }
+
+document.getElementById('file-previa').addEventListener('change', async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const { aoa } = await readWorkbookFile(file);
+    STATE.previaAoa = aoa;
+    document.getElementById('fn-previa').textContent = '✓ ' + file.name + ` (${aoa.length - 1} linhas)`;
+    document.getElementById('dz-previa').classList.add('has-file');
+  } catch (err) { alert('Não consegui ler esse arquivo. Verifique se é um .xlsx válido.\n' + err.message); }
+  checkStep1Ready();
+});
+document.getElementById('file-hist').addEventListener('change', async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const { aoa } = await readWorkbookFile(file);
+    STATE.histAoa = aoa;
+    document.getElementById('fn-hist').textContent = '✓ ' + file.name + ` (${aoa.length - 1} linhas)`;
+    document.getElementById('dz-hist').classList.add('has-file');
+  } catch (err) { alert('Não consegui ler esse arquivo. Verifique se é um .xlsx válido.\n' + err.message); }
+});
+
+document.getElementById('btn-to-step2').addEventListener('click', () => {
+  const aoa = STATE.previaAoa.map(r => r.slice());
+  STATE.header = aoa[0].slice();
+  STATE.colMap = buildColumnMap(STATE.header);
+  ensureColumns(STATE.header, STATE.colMap);
+  STATE.rows = aoa.slice(1).filter(r => r.some(c => c !== null && c !== '')).map(r => {
+    const row = r.slice();
+    while (row.length < STATE.header.length) row.push(null);
+    return row;
+  });
+
+  // segmentos distintos encontrados no arquivo
+  const segIdx = STATE.colMap.segmento;
+  const segSet = new Set();
+  if (segIdx !== -1) STATE.rows.forEach(r => { if (r[segIdx]) segSet.add(String(r[segIdx]).trim()); });
+  STATE.allSegments = Array.from(segSet).sort();
+  renderSegList();
+
+  goToStep(2);
+});
+
+/* =====================================================================
+   ETAPA 2 — AJUSTES
+   ===================================================================== */
+function renderSegList() {
+  const el = document.getElementById('seg-list');
+  if (!STATE.allSegments.length) {
+    el.innerHTML = '<p class="empty-note">Nenhum segmento encontrado na coluna Segmento.</p>';
+    return;
+  }
+  el.innerHTML = STATE.allSegments.map((seg, i) => {
+    const codigo = segmentoCodigo(seg);
+    const checked = codigo && STATE.cfg.segmentosReduzidos.has(codigo);
+    return `<div class="seg-item">
+      <input type="checkbox" data-seg-codigo="${codigo || ''}" id="seg-${i}" ${checked ? 'checked' : ''}>
+      <label for="seg-${i}">${escapeHtml(seg)}</label>
+      ${checked ? '<span class="seg-tag reduzido">reduzido</span>' : ''}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('[data-seg-codigo]').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const codigo = e.target.dataset.segCodigo;
+      if (!codigo) return;
+      if (e.target.checked) STATE.cfg.segmentosReduzidos.add(codigo);
+      else STATE.cfg.segmentosReduzidos.delete(codigo);
+      renderSegList();
+    });
+  });
+}
+
+document.getElementById('btn-to-step3').addEventListener('click', () => {
+  STATE.cfg.janelaInicio = document.getElementById('cfg-janela-inicio').value || '08:00';
+  STATE.cfg.janelaFim = document.getElementById('cfg-janela-fim').value || '15:00';
+  STATE.cfg.tempoSelecionados = parseInt(document.getElementById('cfg-tempo-selecionados').value, 10) || 0;
+  STATE.cfg.tempoOutros = parseInt(document.getElementById('cfg-tempo-outros').value, 10) || 0;
+  goToStep(3);
+});
+
+/* =====================================================================
+   ETAPA 3 — PROCESSAR
+   ===================================================================== */
+document.getElementById('btn-process').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-process');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Processando...';
+  document.getElementById('log').innerHTML = '';
+  document.querySelectorAll('.pipe-node').forEach(n => n.classList.remove('active', 'done'));
+  try {
+    await runPipelineStep3();
+    renderStep4();
+    btn.innerHTML = '▶ Processar planilha';
+    btn.disabled = false;
+    goToStep(4);
+  } catch (err) {
+    log('ERRO: ' + err.message);
+    btn.innerHTML = '▶ Processar planilha';
+    btn.disabled = false;
+    alert('Ocorreu um erro no processamento: ' + err.message);
+  }
+});
+
+/* =====================================================================
+   ETAPA 4 — REVISAR ENDEREÇOS
+   ===================================================================== */
+function renderStep4() {
+  const R = STATE.results;
+  const cards = [
+    { n: R.totalLinhas, l: 'Linhas processadas' },
+    { n: R.janelaPadraoCount, l: 'Janelas padrão' },
+    { n: R.cepCorrigidoCount, l: 'CEPs corrigidos' },
+    { n: R.enderecoCandidatos.length, l: 'Endereços p/ revisar' },
+  ];
+  document.getElementById('summary-cards-4').innerHTML = cards.map(c =>
+    `<div class="card"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join('');
+  renderEnderecoTable();
+  renderJanelaExtraTable();
+}
+
+function renderEnderecoTable() {
+  const R = STATE.results;
+  const el = document.getElementById('tbl-enderecos');
+  if (!R.enderecoCandidatos.length) {
+    el.parentElement.innerHTML = '<p class="empty-note">Nenhum endereço divergente encontrado dentro das observações. 👍</p>';
+    return;
+  }
+  let html = `<thead><tr>
+    <th>Aplicar</th><th>Cliente</th><th>Trecho da observação</th>
+    <th>Endereço atual</th><th>Endereço candidato</th><th>Confiança</th>
+  </tr></thead><tbody>`;
+  R.enderecoCandidatos.forEach((c, i) => {
+    html += `<tr>
+      <td><input type="checkbox" data-end-idx="${i}" ${c.aplicar ? 'checked' : ''}></td>
+      <td>${escapeHtml(c.cliente || '')}</td>
+      <td><span class="obs-snip">${escapeHtml(c.obsSnippet)}</span></td>
+      <td>${escapeHtml(c.atual.rua || '—')} ${escapeHtml(c.atual.numero || '')}<br><small>${escapeHtml(c.atual.bairro || '')} · ${escapeHtml(c.atual.cep || '')} · ${escapeHtml(c.atual.cidade || '')}</small></td>
+      <td>
+        <input class="mini-input" data-end-field="rua" data-end-idx="${i}" value="${escapeHtml(c.candidato.rua || '')}" placeholder="rua">
+        <input class="mini-input" data-end-field="numero" data-end-idx="${i}" value="${escapeHtml(c.candidato.numero || '')}" placeholder="número" style="width:70px;">
+        <input class="mini-input" data-end-field="bairro" data-end-idx="${i}" value="${escapeHtml(c.candidato.bairro || '')}" placeholder="bairro">
+        <input class="mini-input" data-end-field="cep" data-end-idx="${i}" value="${escapeHtml(c.candidato.cep || '')}" placeholder="CEP">
+        <input class="mini-input" data-end-field="cidade" data-end-idx="${i}" value="${escapeHtml(c.candidato.cidade || '')}" placeholder="cidade">
+      </td>
+      <td><span class="tag ${c.confidence === 'high' ? 'high' : 'low'}">${c.confidence === 'high' ? 'alta' : 'baixa'}</span></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  el.innerHTML = html;
+  el.querySelectorAll('[data-end-idx]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.dataset.endIdx, 10);
+      if (e.target.type === 'checkbox') STATE.results.enderecoCandidatos[idx].aplicar = e.target.checked;
+      else STATE.results.enderecoCandidatos[idx].candidato[e.target.dataset.endField] = e.target.value;
+    });
+  });
+}
+
+function renderJanelaExtraTable() {
+  const R = STATE.results;
+  const el = document.getElementById('tbl-janelas');
+  if (!R.janelaExtraRows.length) {
+    el.parentElement.innerHTML = '<p class="empty-note">Nenhuma linha com mais de 2 janelas de horário. 👍</p>';
+    return;
+  }
+  let html = `<thead><tr><th>Observação</th><th>Janelas encontradas</th><th>Aplicadas</th></tr></thead><tbody>`;
+  R.janelaExtraRows.forEach(r => {
+    html += `<tr>
+      <td><span class="obs-snip">${escapeHtml(r.obs || '')}</span></td>
+      <td>${r.windows.map(w => w.join('–')).join(' | ')}</td>
+      <td><b>${r.windows[0].join('–')}</b> e <b>${r.windows[1].join('–')}</b></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  el.innerHTML = html;
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const group = tab.closest('.tabs');
+    group.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const panelId = 'tab-' + tab.dataset.tab;
+    // desativa somente os paineis irmãos deste grupo de abas
+    const allPanels = group.parentElement.querySelectorAll('.tab-panel');
+    allPanels.forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  });
+});
+
+document.getElementById('btn-to-step5').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-to-step5');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.innerHTML = '<span class="spinner"></span> Aplicando...';
+
+  try {
+    const colMap = STATE.colMap;
+    const linhasParaRefrescar = [];
+
+    STATE.results.enderecoCandidatos.forEach(c => {
+      if (!c.aplicar) return;
+      const row = STATE.rows[c.rowIndex];
+      let enderecoMudou = false;
+      if (c.candidato.rua && colMap.endereco !== -1 && row[colMap.endereco] !== c.candidato.rua) { row[colMap.endereco] = c.candidato.rua; enderecoMudou = true; }
+      if (c.candidato.numero && colMap.numero !== -1) row[colMap.numero] = c.candidato.numero;
+      if (c.candidato.cep && colMap.cep !== -1) {
+        const novoCep = standardizeCep(c.candidato.cep);
+        if (novoCep !== row[colMap.cep]) { row[colMap.cep] = novoCep; enderecoMudou = true; }
+      }
+      if (c.candidato.cidade && colMap.cidade !== -1) row[colMap.cidade] = c.candidato.cidade;
+      if (c.candidato.bairro && colMap.bairro !== -1) {
+        row[colMap.bairro] = c.candidato.bairro;
+      } else if (enderecoMudou && colMap.bairro !== -1) {
+        // o endereço mudou mas não temos um bairro conhecido para ele —
+        // o bairro antigo pertencia ao endereço antigo e não é mais confiável
+        row[colMap.bairro] = null;
+      }
+      // se ficou sem bairro (endereço novo, não catalogado), busca via ViaCEP
+      if ((!row[colMap.bairro] || String(row[colMap.bairro]).trim()==='') && row[colMap.cep]) {
+        linhasParaRefrescar.push(c.rowIndex);
+      }
+    });
+
+    if (linhasParaRefrescar.length && colMap.cep !== -1) {
+      const ceps = linhasParaRefrescar.map(idx => STATE.rows[idx][colMap.cep]).filter(Boolean)
+        .map(c => String(c).replace(/\D/g, '')).filter(d => d.length === 8);
+      const cepsUnicos = Array.from(new Set(ceps));
+      let lookups = {};
+      if (cepsUnicos.length) {
+        try {
+          lookups = await Promise.race([
+            lookupCepBatch(cepsUnicos, 6),
+            new Promise((resolve) => setTimeout(() => resolve({}), 20000)),
+          ]);
+        } catch (e) { lookups = {}; }
+      }
+      linhasParaRefrescar.forEach(idx => {
+        const row = STATE.rows[idx];
+        const cep = String(row[colMap.cep] || '').replace(/\D/g, '');
+        const info = lookups[cep];
+        if (info && info.bairro) row[colMap.bairro] = info.bairro;
+        if (info && info.cidade && (!row[colMap.cidade])) row[colMap.cidade] = info.cidade;
+      });
+    }
+
+    // ---- agora sim: classifica a REGIAO de TODAS as linhas (primeira vez nesta etapa) ----
+    STATE.historicoSuggestions = STATE.histAoa ? buildHistoricoSuggestions(STATE.histAoa) : {};
+    const regiaoContagem = {};
+    const regiaoNaoResolvida = [];
+    STATE.rows.forEach((row, idx) => {
+      const bairro = colMap.bairro !== -1 ? row[colMap.bairro] : null;
+      const cidade = colMap.cidade !== -1 ? row[colMap.cidade] : null;
+      const result = getMacroRegiao(bairro, cidade, STATE.historicoSuggestions);
+      row[colMap.regiao] = result.regiao || null;
+      if (result.regiao) regiaoContagem[result.regiao] = (regiaoContagem[result.regiao] || 0) + 1;
+      else regiaoNaoResolvida.push({ rowIndex: idx, bairro, cidade, cliente: colMap.cliente !== -1 ? row[colMap.cliente] : '' });
+    });
+    STATE.results.regiaoContagem = regiaoContagem;
+    STATE.results.regiaoNaoResolvida = regiaoNaoResolvida;
+
+    renderStep5();
+    goToStep(5);
+  } catch (err) {
+    console.error(err);
+    alert('Ocorreu um erro ao aplicar os endereços: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+});
+
+/* =====================================================================
+   ETAPA 5 — ALOCAÇÃO POR REGIÃO
+   ===================================================================== */
+function renderStep5() {
+  const R = STATE.results;
+  const cards = [
+    { n: R.totalLinhas, l: 'Linhas classificadas' },
+    { n: Object.keys(R.regiaoContagem).length, l: 'Regiões distintas' },
+    { n: R.regiaoNaoResolvida.length, l: 'Não resolvidas', cls: R.regiaoNaoResolvida.length ? 'warn' : '' },
+  ];
+  document.getElementById('summary-cards-5').innerHTML = cards.map(c =>
+    `<div class="card"><div class="n ${c.cls||''}">${c.n}</div><div class="l">${c.l}</div></div>`).join('');
+  renderResumoRegiao('resumo-regiao-list');
+  renderRegiaoTable();
+}
+
+function renderResumoRegiao(targetId) {
+  const R = STATE.results;
+  const entries = Object.entries(R.regiaoContagem).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, e) => s + e[1], 0);
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  el.innerHTML = entries.map(([regiao, n]) =>
+    `<div class="region-count"><span>${escapeHtml(regiao)}</span><b>${n}</b></div>`
+  ).join('') + `<div class="region-count" style="border-bottom:none;padding-top:10px;"><span>Total classificado</span><b>${total}</b> / ${R.totalLinhas} linhas</div>`;
+}
+
+function renderRegiaoTable() {
+  const R = STATE.results;
+  const el = document.getElementById('tbl-regioes');
+  if (!R.regiaoNaoResolvida.length) {
+    el.parentElement.innerHTML = '<p class="empty-note">Todos os bairros foram classificados automaticamente. 👍</p>';
+    return;
+  }
+  const opcoes = Array.from(new Set(Object.values(BAIRRO_MACRO).map(stripAccents).concat(['SP-ABCDM']))).sort();
+  let html = `<thead><tr><th>Cliente</th><th>Bairro</th><th>Cidade</th><th>Região manual</th></tr></thead><tbody>`;
+  R.regiaoNaoResolvida.forEach((r, i) => {
+    html += `<tr>
+      <td>${escapeHtml(r.cliente || '')}</td>
+      <td>${escapeHtml(r.bairro || '—')}</td>
+      <td>${escapeHtml(r.cidade || '—')}</td>
+      <td><select data-regiao-idx="${i}">
+        <option value="">— selecione —</option>
+        ${opcoes.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
+      </select></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  el.innerHTML = html;
+  el.querySelectorAll('[data-regiao-idx]').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.dataset.regiaoIdx, 10);
+      STATE.results.regiaoNaoResolvida[idx].escolhida = e.target.value;
+    });
+  });
+}
+
+document.getElementById('btn-to-step6').addEventListener('click', () => {
+  const colMap = STATE.colMap;
+  STATE.results.regiaoNaoResolvida.forEach(r => {
+    if (r.escolhida) {
+      STATE.rows[r.rowIndex][colMap.regiao] = r.escolhida;
+      STATE.results.regiaoContagem[r.escolhida] = (STATE.results.regiaoContagem[r.escolhida] || 0) + 1;
+    }
+  });
+  renderResumoRegiao('resumo-final-list');
+  goToStep(6);
+});
+
+/* =====================================================================
+   ETAPA 6 — EXPORTAR
+   ===================================================================== */
+document.getElementById('btn-export').addEventListener('click', () => {
+  const statusEl = document.getElementById('export-status');
+  try {
+    const aoa = [STATE.header, ...STATE.rows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    const filename = 'previa_routeasy_processada_' + new Date().toISOString().slice(0,10) + '.xlsx';
+    XLSX.writeFile(wb, filename);
+    statusEl.textContent = '✓ Arquivo gerado: ' + filename;
+  } catch (err) {
+    statusEl.textContent = 'Erro ao gerar o arquivo: ' + err.message;
+  }
+});
+document.getElementById('btn-restart').addEventListener('click', () => location.reload());
+
+</script>
+</body>
+</html>
