@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automação - Renomear e Organizar NFs Emitidas | Raiar Orgânicos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+:root{
+  --azul:#5CDCF2; --marinho:#254D69; --marinho-dark:#182F41; --rosa:#FFA385; --amarelo:#FFD043; --terra:#F2A15E;
+  --bg:#F4F6F8; --surface:#fff; --border:#DDE5EA;
+  --text:#1a1a1a; --muted:#7a8a96; --ok:#2d6a4f; --warn:#c84b31;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);min-height:100vh}
+
+/* ---------- Header ---------- */
+.rh{background:var(--marinho);min-height:60px;padding:10px 40px;display:grid;
+  grid-template-columns:200px 1fr 200px;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(37,77,105,.35)}
+.rh-logo{height:38px;width:auto}
+.rh-center{font-size:12px;color:rgba(255,255,255,.6);letter-spacing:2.5px;
+  text-transform:uppercase;font-weight:800;text-align:center}
+.rh-right{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+
+.home-hero{background:var(--marinho);padding:44px 40px 76px;text-align:center;
+  position:relative;overflow:hidden}
+.home-hero::after{content:'';position:absolute;bottom:-1px;left:-4%;width:108%;height:60px;
+  background:var(--bg);border-radius:55% 55% 0 0;pointer-events:none}
+.hero-eyebrow{font-size:11px;color:var(--azul);letter-spacing:4px;text-transform:uppercase;
+  font-weight:800;margin-bottom:12px}
+.hero-title{font-size:30px;font-weight:800;color:#fff;margin-bottom:8px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.6);max-width:640px;margin:0 auto}
+
+.content{max-width:1080px;margin:0 auto;padding:0 40px 64px;position:relative;z-index:1}
+section{margin-bottom:22px}
+
+/* ---------- Steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:-40px 0 28px}
+.step-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;
+  padding:14px 16px;position:relative;transition:border-color .2s;box-shadow:0 4px 18px rgba(37,77,105,.06)}
+.step-card.active{border-color:var(--azul)}
+.step-card.done{border-color:var(--ok)}
+.step-card-num{font-size:10px;color:var(--muted);letter-spacing:1.5px;font-weight:800;margin-bottom:4px}
+.step-card.active .step-card-num{color:var(--marinho)}
+.step-card.done .step-card-num{color:var(--ok)}
+.step-card-title{font-size:13px;font-weight:800;color:var(--marinho)}
+.step-card-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.step-card-status{position:absolute;top:12px;right:14px;font-size:14px;display:none;color:var(--ok)}
+.step-card.done .step-card-status{display:block}
+@media (max-width:820px){.steps{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- Panels ---------- */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:22px 24px;margin-bottom:18px}
+.panel h2{font-size:15px;color:var(--marinho);font-weight:800;margin-bottom:4px}
+.panel .hint{font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.step-section.hidden{display:none}
+
+/* ---------- Upload zones ---------- */
+.upload-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:900px){.upload-row{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.upload-row{grid-template-columns:1fr}}
+.upload-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.upload-card-name{font-size:13px;font-weight:800;color:var(--marinho);margin-bottom:10px}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:18px 12px;
+  text-align:center;cursor:pointer;position:relative;transition:all .2s;display:block}
+.upload-zone:hover{border-color:var(--azul);background:rgba(92,220,242,.04)}
+.upload-zone.has-file{border-color:var(--ok);background:rgba(45,106,79,.05)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-icon{font-size:22px;margin-bottom:5px;display:block}
+.upload-label{font-size:12px;color:var(--muted)}
+.upload-label strong{color:var(--warn)}
+.upload-hint{color:var(--muted);font-size:10.5px;margin-top:4px}
+.upload-filename{margin-top:9px;font-size:11.5px;font-weight:800;color:var(--ok);word-break:break-all}
+.badge-opt{display:inline-block;font-size:9.5px;background:var(--bg);color:var(--muted);
+  border-radius:20px;padding:2px 9px;margin-left:6px;font-weight:700;vertical-align:middle}
+
+/* ---------- Filtros ---------- */
+.filtros{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:6px}
+@media (max-width:900px){.filtros{grid-template-columns:repeat(2,1fr)}}
+.filtro-item label{display:block;font-size:11px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.filtro-item.range{display:flex;gap:8px}
+.tipo-check-group{display:flex;gap:10px;flex-wrap:wrap;border:1px solid var(--border);
+  border-radius:8px;padding:9px 10px;background:#fff}
+.tipo-check{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;
+  color:var(--text);cursor:pointer}
+.tipo-check input{cursor:pointer}
+input[type=date],input[type=text],input[type=number],select{
+  width:100%;font-family:'Nunito',sans-serif;border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:13px;background:#fff;color:var(--text);font-weight:700}
+
+/* ---------- Buttons ---------- */
+button{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;
+  border:none;border-radius:50px;padding:12px 26px;cursor:pointer;
+  letter-spacing:.3px;transition:all .15s}
+button.primary{background:var(--marinho);color:#fff}
+button.primary:hover:not(:disabled){background:var(--azul);color:var(--marinho)}
+button.secondary{background:var(--bg);color:var(--marinho);border:1.5px solid var(--border);
+  padding:10px 20px}
+button.secondary:hover{border-color:var(--azul)}
+button.ok{background:var(--ok);color:#fff}
+button.ok:hover:not(:disabled){opacity:.85}
+button.warn{background:var(--warn);color:#fff}
+button.small{padding:8px 16px;font-size:12px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:12px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Stats / summary cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:22px}
+.card{background:var(--surface);padding:15px 17px}
+.card .n{font-size:24px;font-weight:800;color:var(--marinho)}
+.card .n.warn{color:var(--warn)}
+.card .n.ok{color:var(--ok)}
+.card .l{font-size:10px;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;
+  margin-top:2px;font-weight:700}
+
+/* ---------- Tables ---------- */
+table.rev{width:100%;border-collapse:collapse;font-size:12px}
+table.rev th{text-align:left;background:var(--bg);color:var(--muted);padding:8px 9px;
+  font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);
+  position:sticky;top:0}
+table.rev td{padding:7px 9px;border-bottom:1px solid var(--bg);vertical-align:top}
+table.rev tr:hover td{background:rgba(92,220,242,.05)}
+.tbl-wrap{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:12px}
+.tag{display:inline-block;font-size:10px;border-radius:20px;padding:2px 9px;font-weight:800;white-space:nowrap}
+.tag.ok{background:rgba(45,106,79,.12);color:var(--ok)}
+.tag.warn{background:rgba(200,75,49,.1);color:var(--warn)}
+.tag.muted{background:var(--bg);color:var(--muted)}
+.empty-note{color:var(--muted);font-size:12.5px;font-style:italic;padding:16px 0;text-align:center}
+.footnote{font-size:11.5px;color:var(--muted);margin-top:10px}
+.hidden{display:none !important}
+.log-panel{background:var(--marinho);border-radius:12px;padding:14px 18px;max-height:160px;overflow:auto;margin-top:10px}
+.log-line{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:5px;
+  padding-left:10px;border-left:2px solid rgba(255,255,255,.2)}
+.log-line.err{color:#ffb4a3;border-color:var(--warn)}
+.section-title{font-size:11px;font-weight:800;color:var(--marinho);text-transform:uppercase;
+  letter-spacing:.5px;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.checkbox-cell{text-align:center}
+.small-select{font-size:11.5px;padding:5px 7px}
+
+.raiar-footer{background:var(--marinho);color:rgba(255,255,255,.35);
+  text-align:center;padding:18px;font-size:11px;letter-spacing:2px;margin-top:12px}
+
+@media (max-width:640px){
+  .rh{padding:10px 16px;grid-template-columns:110px 1fr 30px}
+  .rh-logo{height:30px}
+  .rh-center{font-size:9.5px;letter-spacing:1.2px}
+  .content{padding:0 16px 48px}
+  .home-hero{padding:30px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<div class="rh">
+  <div><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbQAAADICAYAAACAoxRIAAA01ElEQVR4nO2deZhlVXX2311VTUM3NM0oQwPKJPMsARQDigxCVAyDQjBo1BhxikSNJnGMkjgQkGCMMc6IIEEkiCCRQfQDUeZJkKGBlkkEBBp6qnq/P/Ze7HVP3br3nDueqn5/z1PPrap79t7r7GGtPa4NCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghxLQlDFsAIeoIyZH0awDAEMLEMOURQgghKkNytMn/Rpr9XwghhKgdyWiNpN/3JnkJyS+T3LHwjGY2hBBC1BM3xQiSHyG5nJllJM8mue8wZRRCCCFaYiMukluS/L9kxLxBm3C/n09yPZJBIzUhhBC1waYQSW5N8rGCMXuA5C2czM4WdtjyCyGEEACyUSL5YpLjzqB9keT6JFcheRDJr5J8kOQ3fLgO0gskx9KPRnhCCCF6hzNqx5A8g+QeUzy3eh/SbmnU0gjSDOCojKAQU6PGIQSiYQkhsPC/tQBsB+CeEMJDvYif5DwAhwJYDuCiEMIzzdIWQgghOiaNhmal0dCWJBemKcjfkdyGXZxFs3Akz3RrcTeSXJfuuIB73jaq7EXy/SSPI3kIyfn++xLphjSys1Ge1v2EEKIOFJRzw+89in8sfZ6WjM5z6fMSS7+DOM04BZJ3klzh4v2RpVt4LiTjem9hQ8p56ZmODZOmLYUQYoiUNSTdKGtnUOaSXMS4XX+cedfj66vI0iTeOSlepniXpd8/mL4fKzy/AcmnU/pLkiG8Mn3X0qAxrwtuRfJ7JP+NcY3wRT4NIWYSY8MWQIhWJMUbQgjj6e89AbwMwIsBzAfwDIA7APwshHB1WqfqdE1qlOQ4gFcB2BjAOAAzXgTweZIXAVjSYRrzAKyZfg+I7W8FgM+QvDKEcFUylkw/6wOYi7zWPQpgYfp9BEAr/5L2/bsAHO3+/zTJXQHcQ3JEPiqFEGIA+FEEySNIXs3W/CyNajo69My8znVOGp0tT58TaXREkh/zz5aM1x8NsEPa9mlHBe4hOZ9pHS89f7B7xkaJJ6XvWnZGXZqXuxGexbG9f6bkOxTX4rTzUgghysC8jrQqyW85ozXBOFW3xP0scwZn1xS+02lBm+bzRsd+Hyf5DMkXJdlKGQRnKPdpEi+doTk7PTc7fb7VfW/PnJC+m9KguXdZg+QjKZzlz0KSq/jn2uVLmbyUYRN1QFOOonYkxTiCOMX2QwAHIk7NjSBOxc2aIui3QgjXkxy1KcoKjKY0Dgewevp9DMBT6XM1xCm8uQA+F0I4osoIJ7FO+pxA41SmpX0kyXeGEL6U8mBTF9aMxaIS6YQU75YA1kOewgSA20IIy1hiutE9M05yNQB7AtgFwEbpkQcB3ALgVyGEp1KYTvJeCCFmJm5Ec0oaVSxNnzY99wyjJ/zvkvwJyUcZXVStl0YKUxm8VmnaFN0vUhpL0udJJN/nRko20nmll7VN3LbZ468KIzKPTWsuIbl7ev477nkb1b3Ey9smvTe58Jbmp/wzJfJjNskPkbyriczGAyS/QHLDsnkihBAzHqdId2FexyKzMfse0049F2Y9duHFw6W5fTIqEy69fRndXz1SkOcmxm31bafanIH5+yYG6hSSf2TjOt1vUpoXuefJaNhf6GVuk96pLrzF3XanpsuPLUn+yhkuW8tbyjzVO+6+f4jka9rFL4QQtYfNNw5UXcuy0dlXmijjH7jnJsXNOJrYg9H3Yun1HGcAPuUMBxlHHvMYN2rYKG2Fk+c9PnyJ+E9272SGYGeSxzd516+RvNalSZIPk1wjxTXl+zGvof2sEH45ya3Td00NIrOz5gUk70vhzHBZPB77vx91HtUqDSGEqC1s40GDJXcdOkU8i3mKy0ZMzzGPTsZcmO0YN0+cwcZpsWOKz7aRbxbjoWcyG7SPF54zz/tmkB4n+QI28fRRCGdG2k8hGja9+EP3XXHTiBm/m9vlo8vDeYxTsZaHZDyk3XJDiL0LyUtTGDsr50dit5P8JfOZOvt+PMn+DONot/TGGSGEGCqMo7FR9/daJF9L8pMk/4Pkp0ke5L5v64g3fW7K7EnDlPEv0ndjzNe9/JqTRw1mbL5nMrZ7h/T5ioJiJslvkvwc4zTnxYwusMjG6cH/apeOe6+LnYxkNJy2Y3Id5hGRGQbD0rrEx9cmrd2crJbeBa1kZR5J/nlBTsuPn5B8icuzeSRfR/K29P0y5s7A532cbcpghHlkP0rdCi6EGATM04r+jNi2jNNpD7E5P04Ku+VIjY1rWYYp1XNTeNvSfmT6/1I2jiJM+d7LEtvTnXL+2hRKvIiNGO33ceaNGlMZChs1/bqQxmNMvhnT9/uy8fxbMQ++np5rtWXfjNKbXVgL/4lW4V3+X8JstM2YXsTGMve/z2ccsRkXM/q+bDlCY5v1x/S9RnhCiN5TVC4kX87obHepU2Z2RmxZUqRmbC5jG+e4TqG+yMVpCvVX6TszQJuyEdtYQebD0Lv6eJukZ4ZmPvPlnhOcPOU3Fc+PHqdS3i6NMZJ3p+fNwNzNbIDs8x8Kz/jf2+5QdPGc5sKanK/zeTiFnOuQfDI9byPF50hunr6f5cMwHwJfn3EN8tVTyVYI5w3iZiQPYDw8/xqSu9Jt8qFGbEKIXuIU3iqMo6PLCsrdfA16zDCYcTo+xTHVCMHSWI1xQ4ZXqksZd90Fp7T/gnF6c3+SL2TcNEFmI/reNulZPMem573895D8OaPXkC+T/BjJdzJOx/2GeTOEpXVsiqu4UcXeaS3GNS3z4ThB8pf2TOG9bGrSb+Ygybe3ep9Cej9vEseW6btmhtc6Cnu4srOwl00Vzqfp/y7+z3034n5/A+Na3WJO5gHGUfPezcIKIURHMO98ey3JW53S8UrPuIHkj5jXwOyZcZJXWHwt0jLF+j/M02+Whq2LPT8yKIT9fnrOzpD9wMfZ7L3S50XMHkgmGEdr6zQLk54/uokCfpJxTak4+rA0NmsS5tLCO1s+b8BonP0OwnGSh7Z5HzNma5L8fUrD8u4e5tHUJGPjZNiPk50y/1eSraUhZZtdrS4v1k91xGPp+Sld45tWHpRRE0J0g1NEto18qVM8ZrAuIHmoe3Zvxt1u/kzXIkaPE1OuaznFemgKU1zT+izT2lgh3CGMuxxNnolkFOY0S8/JuRXjCMFvSz8vfVe8omaM+ezZjxmN2N0pX75Fcm4xLTa68Pou48aP3zMa/A/5dy68v/lx9OzuZW+Rd7un5/2GkPOLaU0R9iVNwn6/VdgyMO+eXJeNu0Wts+OnWG0U64833M4WI0whhCgFpz4YPME4Gtq/8Pyq6fO89LyNfO5mi1GCC28jlZ+59EzRkXGU+GmSbyf5T4wOeD3L3HOz2WQKzL3TG1245ST/QPIwTuHDkHkUNMJ4oHuScW2Tl7NTuAUtnjHj8g7GqbfnSF7JeK1Nq+k8e6e3MTskXpry7WP+mRbvtS7jeqTP74cYr76ZdDyDeWRW9jqbCwplVNx8s8z9bnXM/ncXp7gQVQghSlFQdk+wcWRGxrWskaT0/PTZDel7W0M7I33Xbiu9GbStGM96eUXX7HCvKT9/wHcRyR0tvhbvNJfkgSRfyugNf8qpxjYyl3GBVcW7vRmAuYzTlZavrToCxQPinte2k9OlebHLT8vvL/h3ZfOD7e1G3YenuIodlIUkTyC5A+M66UHMZ/YMK/+z2r2HEEK0xCklv3vOFNJtbJw2253k+ek7m/57jOROLNm7dsp1L+bNHjYNZuedzAXTEjb29K9g3pVXuSffymj4Z9hitFQiXJk86PTGgA0Zp2YvZRxd3co4Kmx3bKLZdK+fMj6Z5LqFMGsxrilu6mUoPGNleQUb11RJ8nqSL5hCniOZR5i+A7VXJ/kjhBAAGkZNL2aeQvTK7vUk/5RxSslvnzcldIaLq+zt06ZgNyN5NidvFihyO+NOxBEfvk0adq6ulgd6zfh1KhfjRpVVKzxvefeDlKfFqcFHGM8E/gfjxp0H0//vYDpT52V18W3CvFnHT1fb3WyrMK+zjTKfIfxICmOj7wmSX07f6bYQIVZG6EYUXShHMzDnJiXj19KedYbFeuCmBO33M0iumeIopYzYOPLbjeQnSF5I8rr08xNGbx4H0q1ncSVeY2GTda2yZe6Mylokb3RGbSpfjmSeUj6ThcPQrs4c6OqCxWOeSybVhYIcT7h6RUbH0KXrcaf1XQhRI5JCaLpgzzwqqeLEdzQpkn2dcpoK+86UkI2ubiW5p8VX4T1KX6YpBZapovhdGBtVrce4m9OXabPLVW1NbAXJtSzd9Ok33xTXOf+J7vxdM9nTp+2utXCPMneMWvmkHHNx+JG46scMZaXtxc5krPGGECZCCCtCCBOM28bXZ9zYMRpCGE8/LGss0sWNIYRwJYBfItYfu8xxAvGSymsAHA9gZwBXIl5eac+sALAdgCtI/k3ZiyDTe0ywiYF2/xslGeydysS7MhBCYNX8sLwOIfw+hHAIgHcAuB2xvGcBmO1+ZiFegHo7gKMAPJnCWpr2+RzyJaWlScZntomWPkeRL0htFmbE1X2SHEv54Ou81t+EqDsFZb+A5N8yHhxeyHhu6nHG9Y4zGb1eWA+27GjJetx2uNifR1tCcjP/LPMmEuvh+6nI75BcnTVcuxKNozvG83cHMHpmOYtx5HYu43TvoZzCbybzaG8HNvrAJLOz5WaH5G1Nc/NUr/x67F2uHk6V3saMl7NeRfK3jPe6/TfJP2OFNVYhxJBwDXUOyc8wrz204v8x+zwsu4kiMJ6nupuTvUqclL5fxSnD45ndG/l1mKdJbmzx9jNvROeUVfxTPcd8Pc8dbNzlOM588/csFg6yp///p6s3tmbb1AOMq/+7MW9WacavmW6BkFETooa4xrwF42YJw24YNq/0tubh1zKedoqlzHZyUzYnujRs1PUoo7Nf251nz+7OeJ8XGXvYHyG5fvpOxqzmsPHyVhs9+b/LnI/7gKsvNqp/lOQrpgj3t+n54nrspLvumDtac5nvxbMt/3bjwBI2eiSxw+YyakLUBWfMNiV5f2qstjOt1TUoplzI6B3CnP+28/pgymMdRs8axYPWJ6Tnip7k5zI6Ep7j4+pfzog6wNy5mcs4SvNGjenzLJJvYnRh9jbGK2zIydOUdzKuBxd9ZhY9v3jDVcT7B/1kCiejJkQdYN4Y8YvUSJcVGvBVjNvd30PyFMb1NDIbO2v8F1t8JdI0BfJvLg7bkn0b47SnX4MpXj3z/A40MfNh7nTtyujj0+pMq7OF/tiHGaADUjzF6UZfH+0AvoU/h3Fn7vuYpyL9DIWmH4WoA64hv62gJCaS4ji2SZg1GT2Ye6VhCmOf9ExZ91RbME9n+vWxTew5F2bS5aBi5YH5TNq+zrB47y9+Krw4LU6S7/DxFOK2dnCSi9PCHu6e24x5LW9peuZ6ujVfIcSQcEbiZk52K3R4esZ7jPcXNF5e6K1OkDw1fdf24LNTUN9zSufnjNfMdHyAW8xcXJ3ZhPH2gTKXqd5P8s99+Bbx2gFuawcTjD5F12Deibl7Id3FLJyfE0IMGDZuiS76u3t+S3SxkTL3Zl+envVTOlel76r4M9yQ8ZDsK3v/lmKm4Y0S43U1pzB6/3iKedfs44xT6CeSXLsYrhCfTbnbz68LRo2Ma3KruTZzCuO68Tkk903/kzETYlg4w3SUa8A2zfJ+TuGFwRmi1Uj+zoUl45kda/QdHYSdSvEIYbDJ5qPUMdqW0V9o0Qlyy0tNC//blfnsmu+sFY3a+r18JzF85ClkZrBG+vQeIZ5rFSB5clgC4MlC2MpeNsxwMnogYVkPIGLlJdWT572/pP89FEK4PYRwRwjhMVevwlR1Knn92J3xwPc+6dnrARyH6FkkIOq5FQAOAHAOAPOk8yib3PEmhBgCboTmvXbYCO1L/plCOHP8ul6a5qEL9zN7ZrBvI1Z2mLf3t/Qc42YY5jJ6/DfuTQbQ1sqOdvXaXxT66fS9vPULURfYuBXaGq2tpT3CfJ3HmFMCIyRnp//bQVdvCE+yMEN7MSFawEb3VsZz6fMf03dz0uer03d2JnNFMmxb+riEEEPGGalVGNe+imsG328R9lWMu7t8Q59gi1uehagLzqj9r5thsE0gRxaeeUeTjtsH03fquAlRF9jcrRDZuLvrTxkvepzDuOj+GTf94qdivpni0pqCqDXM2/R3cx0ym52YYHQksIBxduLdBYM2QfK0FF4GTYi6wDyNuHoapTUzamQ8yHofGw8/T7hn72Z0ZSXP92Ja4Iya+Xz03kHIuC3/djZi9f3EFFYGTYg6wTy1sgezW6FlzOfSiodXbXrGjNu9JF/s4xJiOuCM2sdc/TYn3EVsJLec5BYpnOq7EHXDNeyXMTsopmvA5nG/6LT1f5mvcFHjFtMOV/ePZj5XaQbM6ryfmfi4DyeEqCGuYb+A5BcZr+ZoxjKSl5F8vQsrYyamLa7ur0/yUyTvaVLvn3LGTPV9BqK1khkG0/Xz6ff1AOwFYFsA8xEPW98N4NchhDvTMwF4/qC1ENMWxsPS4+n3OQB2B7AdgLkAHgTw8xDCIsbD16rvQkwHWML9VJlnhJhucAp3b+571fkZjEZoM5g0+hrB5HKesFGcEDORKeq+6r0QQggh6o9GaEL0gcIIwUYFI4jOnye0hiOEEKL2lNlBp112QvQejdCE6CGFXaaHATgEwJbp67sA/DiEcEHxWSGEEKI2MHts2YbklVOcAWT6bhsfRgghhKgFBWP2cDJc5qVlReF3pmdk1IQQQtQHZgfRs0he67yxTIV9d20KI4fQQgghhg+z26Ujk6Eq+stshj1zpI9DCNE5muoQontsdPXniNvyy8IUxschhOgQGTQhumc8fW6JaJjKtCs7o2Y7IMdbPCuEKIEMmhBd4g5JdzJtOFqIQwjRITJoQnSJW/+6H8kTSIlgE+nZ+wtxCCE6RAZNiO6x9a8LUW0tLKQwPg4hhBBiOKRt+4HkPJL3ldjpaN/dl8IEbdsXQghRC5gPVu/PfHh6Wfp9PP2scGfQVpDc34cVQgghaoEzage5kVoz7iN5kA8jhOgeTXMI0UNIjoYQxkmuDeAtAA4GsHn6+h4AFwH4WgjhcXt2WLIKIYQQLSnuWCS5CslVWj0jhOieaTtCq9Mius4QNZLKxv8AcYu6/TT9biZdpZLyYBTxMk+7TmYEcWfx+EyqM668/fTpjCrvuuibmVRv+kEtCqkKVrHqVLBOUa20txHT3dAcQljRRTxjcEZgJlDHOtstrrzR6bRpM6NfR+o2NZxG9wErsb6Zimln0AyS6yN7Zhjke1iPcwLAEgBPFRujTSfVqRH0C1NK3oglo7QVgO0BbAPgRQBeAGAugFUBLAXwDICHENeVbgNwUwjh3kK8I1CDrRXWeSuU9ywAWwPYAbG8N0Mu79mI7eRpAA8jXnJq5X2/iyOkeGvVZkiGEAJJzgEwH7n9D0yElN44gGdDCE83kXEU02zE2y+mjUFLDYmIDeWrAPZFNGh+KmOQTAB4FsDjABYCuB7AlQCuCiE8AeQdbDOxohUVEMlVAewP4DUA9kNUcFV28C0BcAuAnwA4N4RwrUurVj3klZEm5b06gAMA/BliWzQ/lmVZDOBmxE0yPwgh3NQsnWHCdKM4yXcC+HsAa2N4+mYcsRP4GIC7AVwH4OcArgkhPGPyAjNT38w4mK/oOKfFdug68DDJ/yb5Ui87azIH3wvoNjSQ3JjkR0ne2SQv7FJLf8ml//HfFbmM5NHMW+F1Z9iQKJT3i0h+huS9PSzvcZIXk3ytT3OY5c2sb/Zp3sxrw30kTyf5krrknWiDFQ7JOYwGww6rTtTgxw7MLk+/e/6X5F7uPab1mSOmiyzT72uT/DTJP7j3HXf5MFGxYVpeFj1sXEPyMCdD7XcHpnwaa/NTe4VTKO8NSJ5M8qkelre1G8+VJA9wMgylvBmnzUHyI0nWpRy+rmmnb84juYd7h2mtb2YszAZtHskHXYOoI9ZQJ9zf/0ZybnqH2ivkZtA1DpLHkFzo3rlZ4+oW69UbZ5LcMKU/NrycaA0rGKoqzw4aNo7K3kryoQGUt4/zqyTXSekPvLyZDdqH3TvXEetUmL5ZwdjxmNb6plNq26A8zAuzawC4E8AGGPzibCeMI997dSOAY0MIt5Ic62Yn4KBhPiy8JoDTAByXvlqBvI7ZL8wr/SiA3wF4awjhItZwXc3V01EAbwSwF4BZhceWA7gawJkpT0PdNr1Y/WTcePUfAF6fvhpEeY8jHwG4G8CbQwhXDrrNuDz4MIDPIL57bTtSCa9vbgLwphDCjdNN38x4mEdoazD3FOs6QmuG+e97nNl/X90bB4CGnup2JG9J71HsTQ8C30N+r8nGmoxymKbnSK5F8ooS73N5erZWa4PM5b0Hybtc3g+6vVl5LyP5Fi/bgPOh7iO0ZpisTzFN13Oa6Jtu0RzrYJiF2HtaC8CPSL4i9f5qPR3A3Et9KYCfIW7Dt176oOvOGOJobQLAKSQ/mXqddcnDkbS77GQALwewDDGvmv0sA/CnAL6QwtSiHbryPhjApQC2QB6ZDNroWnmPAfhvkh9Msq0UirlLxhD1zRoAfkjyiJUl72rRkCpQm55sB4wiNtDVECvZzmnKqZZlwDilt4LkywD8GMA6iI1kmI3CplNWAPgnkp+oQ0NlnDYcJ7kugCMQy3kWYl41+5mVnjmS5Lo29Tgc6SPOmB0K4HxEZViH8kaS419J/l0dynuaYPomADhzunSiu6WWyrQFyxArt7nUmW6MIMq/OoBzGNekarc5gHnNbEcAFyArtzo0BvMusQLAR0meUAMlZ+Vnh4lH0L7zNYLYuVmrEMfAcZ2XfQCcgzw6qkt5jyCW9+dIHjtgxWxruNMRO7s7BuBski+scye6F0yLF0sL7SMhhCUAbkXupU9HTBlvCeC0Ok05AfkAO+MOs/MArInujBlT+GZTb9Y5qYoZtXEAp5Hcrya9z6qHbi1vhkYq7wmSCwCci+jJhei8TrYq706Nw/MushCnH3cbgGI2OX+F7GZqOho260SvA+DbKc9m7IWytVGkJbBC+DhixV4FjQ5QO1WO7PDHGm0n6Y6lsMeRfFVqnMNWxkZIRvYbiNeedLpONY68Y20UzafebMfcOGKZVpLT/Xyb8boWTrPe5yhiPR4KbHQifQbiCHMFqusFaw/tyttGrp2WNxFdaX2XcVt63xSzM5iXIU7BzkKjYZtA552RTvTNBDrXN9aJfhmAd6fdwdOpnZRmWllpZlc0hwD4LKLvuEmPYXiuaaoofnv+BgB7AMP3xeamGt8O4D/R2VZlv3UYAJ5E9N33G8Rt94sRp+UWANgOsQznpmdtzr9K+ZmM3woh/CWHsJ3f1csdEN05VWGnEMLNFkc/5JsKV97dbE0v1vvHEV2Y3YHoq/NZxCnrBYibinZAHAVa2DLTsx6T8dQQwvv6Wd7OWM4BcCqAoxGXCxoew/D0TZW8M8P4FKK/zUeRO68zhmll0IAG5TGK2ECsgm2HOHrbGOUqmTXEbwM4HXknYhlGAKyP2Dj3R/RlZ+sOVRSyyXB4COE8DvG8CLOvzA0QDdA8VDcuXrldBOCbAC4PITzcIt1NABwC4K8A7Nkknirp7hdCuGLQRq1Lg7ZjCOGWQRs0V95bIp5ZmoXqCtLW2Yg4ivkOgCtCCL9vke7mAA5FvPx0l/TvKuVt6QLAHiGEG/pt1OycYJqWXYCYR3MBHA/gWJTTN/bMk4gbhxYjr3G1FQOxU7AV4g7agxGXAny8ZbDOwGdDCB8apr4Rjqmm50juRHIxs5uYVthZjU/0QJ6dSH7LxV32zI55FPlpimdo0wDMvuu+UsifMvj8vpTkvoW4p3IFFQrPHEvyfpc3ZbFnr2Y81zXQfGR2D7VDBZmNHXwcA5S56Bu1ankbP6LzI2jvwsll3eBfMP3vbSQf6SB9K++LBpF3dC7Amnx3VkGmdnn2SLfyklxA8rMuzbJnQq2dPkZyLXu3bmQRPYL5IOto+pmV/m+HWttVMGtA/5LCz3Zxlf0ZY6NLqCMZDaqvwGUq2DKSW6U4Bm7UUj4GklsnWar45vMuvj5YiLOtk1RmY2eH51/AqCR9GZXByvvVKZ6BrUlymhk0ZmO2O7N/wLLYs0tJ/o2Pk+XKe4RuRyrJzRgPmZPVytvk2Me/Uz9hrtMjjPpihOSrkxxlDdqjJOcz64+q+sa7JNuP0betz492mJxvTnHoCEQdYVbKF5asYNZ4TkrhOy5YukZK8gDGxu79OZaR493dytGF/Cb7aQWZ2mEGeTGzR4IRdqhcnByB5LcrymL5fYnJ0av8KSH3dDVoZ1TMY1OaT5Lcz+LqVHbm8l6F5LmuHMtgMp/l32lQuDw8uKTc3qCtkcJ2NDpibB/Wgd+B0UF42U6otZMLU/gZtTlkRr1Mmuse+BA6hDCRto2vEkL4P8S7k2ybcVn2T58D3RrMuEawguR8RP+DQLn1DL/T6/UhhAtIzkp50dF6RpLDbr0+DvFAt3k9aIfJvB/JbdKa1oyq372A+RD4RgBeCzzvJ7Nt0PT5LIBDQwiXp/Ie73Ttz45ahBCWIW64+AXKtxtbuzuM5II6HE4fFCEEhhCWp/y/BcCbUX49ztZJ9ya5dmonMybf1OB7y/LUc/si4q6+Mo3TymAnxkXaQTdMU2aHIHsDKZO+bQh4bwjh4tS4lncrjCnHlAd/AWAR0s3VJYKbZ4sj0t+q35Ox8j4ccWNDlfIeQXQO/Yselvd4MmrLAbwBcZekpdcyKKLscxAvlQXqcRB8YCSjNhZCOB/xzKidOWsZDDFv5wPYOf1vxrSTGfMidcBGiGmE8vX07zINEwA2QjwH5P83CKxX9zrkrb3tsF1pPwohfCk1qq6Vm5GM2mgI4XEA70c+/9M2aPp8tZNTNGL10UZnZeqalfd3Qwhn9sqYGcmojYUQFgH4MMqPNqxe2H15M2oLekmYOn+fS3+X7ZwAwE4VwkwLZNB6j1Wwy9Pf7XqN1ihXQzwKYP/rO276aQ7ioUs7FNsyGGK9WQrgxPSuPZ8mddNR30f01mCeQVph9XkXkhuZh5leyzZdSeU9wegFZk9kt1Itg6VnngLwgVTe/ego2EHmryOeYSs7uxEA7ElyzZk2fVaGNOVLANcA+C3Kz2YA0fn0jEKNvfdMpAr2AOJZkzIK375fo5+CNcEa/4sRR4hlz+8FAOeGEO5A9DLfr5GQyXJ6hefNAfQuhTiEm95GPMdk5yZbYeX97RDCg4gj556PhFKbGUkjvy+nf5eZ3SDiVPn26X8rnU5LHb8VAK5N/ypbPhtYFL2XajisdIU/QBYDeK7ks1ahVm35VO+x8jePK2UMk4X52gB6wybPhYgjBNsI0AprzDumTxm0jOWFTTVV2Xzx9X6Nxh0mzw8RHZGPlUjP6ogZtJWxvO2dF1V83jrQMmiiLZ04Mx1Weby45HM2/fQwgKtSr7pv6xZpyjAkzxM3pH+XTW/L/kg1I9i65HM2grsLwI0DKG+bMlwI4Pb077JtaKu+CDW9WOm9fsigCSC68ymDKbObQgiLGd019bt3Z2t6t6TPdun5TTZlnl+ZsLyw8m43mrHyvs6tafY7P61O3VaQoR0btX9EzHRk0FZuTDmtkz7L+KMDYo8dGGz9eaDi8/PTpwxaxvJirZZPTcbKexDTeZ1On81PnyvjTkeRkEGrF4NWvpZeVe8kf+y1ICV4tuLzdi2LDFrG8mK1iuEe67UgJag6fTasM2iqXzVCBq1/dLLeMKcfgpRgaHdyVaBqXR3G5oBO0pwuctadqka6VxSvk2lHJ3fBiZLIoPWPJQCeTr+X3bZfdm2jV1i68yuGG/TxAiBPi7bD8m6erfkMYDdmJ9Ne9oyF6auMaXMNkyebeRXTXLtPYrViXvtHAEzO+0GNmCzdF5ZM175/ClE3iD4gg9Zj3M68FQD+kP5dtpFt3/6R3uAU3OqId8gB7euDNeLNLZq+CNeIpbF5y6cyJuMGKG8Eu8XStIOqVQyahRlUJ2Yd5PNHZdMcRnm/KH22k9G+X5AOVw+iAwNkOXep+Pzvzb3dADbYrHTIoPUHy9f70me7imvP791HTwxFrNFvheihpMyhavt+R5KzB+F3MqUxAmDX9K8yRncCcRS5XckwvWKvAYXpBMuD7RDzpsyhau95pYoHio5wnmtWRXm3TP5w9UDK28m5CoCXlkzTdMDC9LlS+Z0cFDPRoFXt9fRDIVuct7V8KmO+67ZHapQDcNlk8R+A7Oi1TJgJAJsA2C0Zs77JyXQlEIBtEc9O2Tm4dpjiPTB99s3oWgckXefxqvTvMjLaM69KYfvdObC4LU/KGCerl9sglkG/66WV926I0+/mELkdVncPSp/9HqGZnPsgjiTLygnE28H7RdX3nnEjxJlo0Kp62+iZk1WHVZTr0mcVB7BvMjdAfZDLY4dYj0l/l20MpgiPGcB1PXYm6Y0o58vx+XDp86jUi+6nsbC09kOcmiur3KxzsHkK6+PqKc7orgLgqIppWb08agD10qbh/iL9XXZEaDK9gfGOtb5vukhyvjP9WbZzAESfi0B/jElVXTZoz0SiCow3ut6VLrJrd4OrXRB4ooXtoRx24eOGLH+DtV2W+XuS66TRSb8UnF1OeFDJvGom5xMk1++XnMw3ks8j+VDJPPTYhYtvTPH15eJU5ksqf1JIt4qMPxmQjG/sQEbL8wdJrsE8au61jCPpZwPGC0Qn2Fl5H+XfuQ9yWtvZmVGHlGk79h6PkVwzhe9ZHjKX74kpnXYXtprMd/Urn0QXMN9WvS2r3xTdF4XHbNSuSPKUUSL2zOkp7KxeypTiDMxXul9fSLcs9vyX+iin3cj7Lx3KaDf4/pbkqul9e6qImRXJoS7NqliYQ32cPZTRynvVlBcTHchpef/PKc5+lvd/FtKsko8TJO8gOZv9Ke/AXOZXVJDTdNIPUtierp9xcoelzA3kppO2Te81E2frpieuQD9asUBJ8k9S2J4WqJPpbyvIRObKf1AK31Plwaw4Pu7S64QVjErkAP++PZLR8m4vkstYvpPSTEaSPNW/e49ktE7UWiTvY2eGgsyK+L4UV0+VC3N5n1rIkyqY8ltGcs8UXy/L22Q8kOU7f82wcCf7ePsg5z9UzMu+zhYwd57/xJVXO0wffbQfMokOYZ6qmM84NVVmqsK+f4Lk2imeXvfmrJJtSvLZknKZbBOM0xO2EN+ThsncIA9PaXVqKLycD5PcPMXbdaNgNmYbMSp5sjNDYZgyOd7nQZcymjELJC8spNONjBe6eLs2aszlfXwPZLQyuJfkBineXpb3FiQfYfWpxiKmqI/zedCljIE5L/20bZX2/AjJeRZftzIV5UufazPqNEu3jFwPMerOvi1xiJIUKto3XEVrhz1zWQrb77Wqs1N6ZUdppjweILlzimOsUzlTZTVZDiP5HPPIoBtMzt+S3MLJWbnBsrEsF5C8OcXdjRImc49/nOQxxfzoQE5TwKMkv5fSKFuurbA4vsdcVh0ZjCSbdaiOSe/eTefFsLK4nuRGKf5Z7Ly8LS+3ZPm173ZYea8geaTLj07L+/mpS5LHMY/Ey+alleu/pjj6tbZn5X1ZSq+KHvxGCttRWYouYWoMrqJ9qEIh+kr2oRS+3wvINhVQpbHas0+QfIOPkyXWB+jWytz/3uPyqFvlZlh8v2OafrQ8ZZsNBMwbP8bc/17GOArwcXeL7/V/uIO8HGFjfVtA8pIUXy+MmWFxXUJygcujtp0ZNi/vDzd5/26xMrmb5N49KO8DGTec+Li7xb/vBzoob8tLMxJjJD/dJO4ycoyTfIaxzvRtrYq5c2C6sMoSB5l1YYNuFT3AZWqzH99gZ5P8QqFgyla0ZSS3SvH08yyVGbUfdiCnN4DfJbl9IW5TtMWfkcJzO5M83717r5RbUc4JxvLYoJgHTWQcLTyzLsnPMOdPr5Sb4de4/o9pLahEXobCe7yFeddlr2X0cT6U0vL1fap2USzvPdM7kr0ZiU8l4zKSn2Katq9Y3hsyr+uZnL3E1/Mfk9ytanmn5w4ieY2TsUpemlE5yeuCfsBsfLdiLJdOdoh+geTsNuXYNJ/EFJTJKJKrkzya5A2FAqlSyS5McfXbq4DfgbmU1ad+vCJeQvJMkn/GghJpku4ajL3f7zBWcMunXis3wzf2R0n+K8k92GL0y9hgdmXs/T5YiKtf+BHq9xmnYNdsk5ebkTyB5HVN4umnjExpnkByszYyrpne5fvM5dBPGX0ZPUDykyR3Yov2xDil9RKSn2esI2R/Olge30E6k+TBJFv6IiW5Mck3kby0STxlsfawiLFs+nLcoSC3GTVb160ye2DvdwOjbm3rdLnf79MJtRKI2b/gOgBeg0YnuAHAuogeI/ZG9FYB5IOfZbHnXxFCuIzRgW1fXU1ZGiQ/AeCjiFdjVJ3mLL7nYwBuBfAbAA8hXukyG8ALEG+g3hnZR2Oz8P2imM4dAG4EcA+izEQsx80B7IjsrsjCjqD/9bIo48OIHhwsL5cgOrvdBMAO6WeOCzsIGe22BpPzWcRLTm9BvBvuScSDsRsievLYCdlHo8nZ7/IuymgXc94M4F7E8g4A1kMs753QeDv6sOrk75DL+xEAS5HLeztEjz2me+zm+aodX2vjh4cQzhuwntkfwKXoXDcCsY5dhdh+/wA0HAR/GsD5IYQ/mM7uXvreUBuDlnoXRPRe/VNk56RTYafzq1Q0K7CLQgiHMN643HevAswuokYA/BzAnuisMZsCKetyagK5MXbiFse8XnQSdhzljfYKxLzopD5afnT6fmXzcrzCs0U6qas+LFGurvSivDsxMIMq727rZNXyBjrLj+UAZgH4SgjhrwdhzAzTaSR/DOBgVNczZevqvQBeieibMgxCj5ahTgZtLF3z/u8ATkDsNU1VEGYcKiWBWFgrEB3d/gYDLAhX0bZAdH+zNqr5gJsUJbICK2IKvpu4Q4u/qzCBqV0DmWLqNG4vVzcytsvLbkZkvoz7Wd7dyNjLfGx1D2An7dbH3cs6abIW6TYvbWR2DYCXp78nBjWKcQODbQBcn2Tp5H1atdtxxNmg00MI7zLd3aHIPaVO5w78nWATiAUx1U8ncluv8B9DCLcj+gkcWK8iGbPREMLdiP70rAJ0KkNAfJ9m+TOKzsvWRiL3IHYsjE7lHJlCxk4bGtDY234X4vRRQPVbjo12edmpcluO+I6np58RdO47tF8yrkhhbwTwHuTbCjpRwGYMetlugVz3COBvEOtmN7dSjKA/eWmj1PsQpxqXAuAgp+SSThtJOu4fEd+nk3bRqhzNX6bd31ibKcc6GTRjBXovl00BnBdC+DwH5MC0SJrfHgsh/BTAscgKvRbDdeTpiScAHBlC+BKAtyE38DrI6aed3htCOB3AkQAWITa0WvQU0Vjn3hVCeBeA89L/+uEQuxNsNLEI0fnwaQBORHacXAdFZXUuAHhLCOHLiOX9BKo5rO431mF+EMDBIYQHUwd2GG1mIumZz6N/dW4E9Wlrz1NHg9braVBTLNcAOC4NyceHtZCZplXHQghnIzZM68UPu3JYg3wYwIEhhOsY7zz7KoC3Ik8XDVOB2OhxFMB7QghfTDLeiXh1y0IM36gxpT8LwDkAjmb2wnB0+t+s9MwwDYYZs4UAXhVCuDPl5ckA3o88UhlmJ8ZvwDk+hPCNJON1iNfgPIzORyC9ZDliXt4N4JUhhN8Mct2sSNJtdo/gcYi6rx9GrTZLVrWD+bzW/xS2kXaDbVf/Ncn1Uvy1MOLMByFfzngomYzbbPu5hbkZE8zbe28iuXWSa7Qg5+tI/tHJOWgszWeZDpo72UzWTUhenZ4z7yCDxNfZL7qyDmw8z/bFKcIMAvMaQsa82mSK8j6O8ZgIOfjy9nXyCRYcNztZt2assybjoNvOOHMdu4Lkhl6+YcO8jX89Rh1IZp3YDVZ//ifFX4v3rRXsrUHzFe0ikvNT3LUwZgZzA90kyWkMonF6pUGSZzBfbVE8BGty7kTyWhdmEMrYn527ieQeXiYno9Wf1Uh+xYUfRF56I/E0ybcmWRrOHtF5iiD51vQsORjjWyzvr5BcrU15/wnJ21z4QZW38UuS23mZmpT3mox11xhG2/kCC8a2LjDXt/nMOsbrx06QQWsHe2PQvGIh4+FeK9BaGTODjZ4g3s3olNjoR+MsNsYHSf6lk6FpPrHRYHzWxdErP4FFGX2c4yRPZjrsySkakJed5BEkF7o4y95dVYVifbuEWQE3dbHE5FYp/b4dswstsj+GbZyN5b2Q5BElytsU9DyS/97knftZ3ktJ/jPjhaRly/sv2Xg4vx9tp5iXNzHditEqL4cNnQ5k1IlGp/VNBq0d7NygeeezxrUkX5nia5juqSN0PXnG0dqXGKfWDGtInboxMiXk83QxyVOYPae39WTARgWyB8kLCuksZ+fKzsqxOL11Icm9mskwhYzeYKxN8iRmD+R0+dBJQzavLUVleTuTd/eUbtsGzsaOzHEpDp9Or8v7Cca8sNslyvg09DK+jI3Gl+xPeZ9LcpeK5W0KewPGOr3Yxder8i56Rvk7kquWzcthQ6cHSb6SjTMtVTspMmjtYFZCZ6WMXcI8NLYfq5zLm1QykryF5F8ze22fVhnNRgWyNeNI6D5OxueBb7DF/GnWS13E6Hpoq2bplpAxsFHO/RhvE1hcSMcUgZex+DNVOT5L8hySr/AysoLSKMi4GaN7rYWcjM+rVnnZrIN1NaO/RZu6q+R8lo0dmdVSXFc3SadKeRdZmN59M5duN+V9EKNf0iWFdLop76cZpw1f6mVk5+W9FWMdX1RIxzoKnZb3jSTfT+d2rkpe1gFmPTuLUVfeUqIci3p4ScrLs3ycwuEy+rAmFakVDzE67n0N3d1H0zWTOVmBrEHytSS/xnzjcFXuZ/Rj9wam9cQUd8c9SxbuTyK5Ocn3MTrFfbwDGZ8k+VPGC1G3mCqdLvNydca74L7J7NG/CksZr075HMl9Cml1XN+KYUnuk9K4PqVZlXvTOx5O55OP3Ze3Xw/cmuQHSF5O8qkOZPwD45rOu9lobHtZ3vMZ6/yZjG2gKssYpxVPJfmKQty1H5VNReE9ZjHqzu8yO90uy2HF+IZNrQqE2ZfjUQDeDmAtNHowWIJ4/uR3iD7jrgNwUwjhjy6OUQzwZH6/SI16xJ/AZ1xT2BrRJ942iG7C1kP0OzcHcVvuYkQfevcjekO5CcCtIYTFLp5RAOzFGZlmcZFcH9En3o6Ivvs2RvSMMgexPBcjluODiL7ibk4yPlJ4/9CLrc9T5OUcANuiMS/XBTAXcYvzcwCeQvT1dw+i38ybQgh3NXn/rutbUo4jxfcluWWScXtEf4gbIJb3amgs74XI5X17COFZF8dYkrFf5b1hkm9HxPq5IWLbnYvYbq28FwG4E7lOPtYq3i5knFR3SM5NMlp5b4pc3mNoLO97kcv7t4W4xzDEYz+9oll9Y9wUthOA3RDb78aI5bgqGvXwE4huvc42nT1Q4VtQK4MGZKNWMYz1EKa9IStiFQ+IB7O7iKeveWRGA10ozl7E0Sb+XuXlGKLy7cs5o1RWoRt3QgMs746V+3Qrb0i/TApbt/yonUEDcm8t/RTx7pJmZCWbilT5ij4aix4dgvsBhpBHrpF4GXx51kVGn5dFGdHs+0F7frDRBhq9tbQq7wlgsO6WplF5t5LR5JxUH1Yy/TJJvzZ5NKBHsydCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghnuf/Ax6G0Z00ihUcAAAAAElFTkSuQmCC" class="rh-logo" alt="Raiar Orgânicos"></div>
+  <div class="rh-center">Automação · Financeiro</div>
+  <div class="rh-right"></div>
+</div>
+
+<div class="home-hero">
+  <div class="hero-eyebrow">Financeiro</div>
+  <h1 class="hero-title">Renomear e Organizar NFs Emitidas</h1>
+  <p class="hero-sub">Valida se os pedidos expedidos foram faturados, renomeia NFs, XMLs e Boletos e organiza tudo em pastas prontas para o SharePoint.</p>
+</div>
+
+<div class="content">
+
+  <div class="steps" id="steps">
+    <div class="step-card active" data-step="1"><div class="step-card-num">ETAPA 1</div><div class="step-card-title">Upload</div><div class="step-card-desc">Pedidos, NFs, XMLs e Boletos</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="2"><div class="step-card-num">ETAPA 2</div><div class="step-card-title">Filtros &amp; Validação</div><div class="step-card-desc">O que já foi faturado</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="3"><div class="step-card-num">ETAPA 3</div><div class="step-card-title">Pendências</div><div class="step-card-desc">O que falta enviar</div><div class="step-card-status">✓</div></div>
+    <div class="step-card" data-step="4"><div class="step-card-num">ETAPA 4</div><div class="step-card-title">Renomear &amp; Baixar</div><div class="step-card-desc">Arquivos prontos</div><div class="step-card-status">✓</div></div>
+  </div>
+
+  <!-- =============== STEP 1: UPLOAD =============== -->
+  <section id="step-1" class="step-section">
+    <div class="panel">
+      <h2>1. Envie os arquivos</h2>
+      <p class="hint">A planilha de Pedidos é obrigatória. Envie todas as NFs, XMLs (obrigatórios) e Boletos (opcional — a maior parte dos clientes não exige) da expedição de uma vez. O número da nota é lido automaticamente do conteúdo de cada arquivo — não depende do nome.</p>
+      <div class="upload-row">
+        <div class="upload-card">
+          <div class="upload-card-name">📋 Pedidos</div>
+          <label class="upload-zone" id="dz-pedidos">
+            <input type="file" id="file-pedidos" accept=".xlsx,.xls">
+            <span class="upload-icon">📄</span>
+            <div class="upload-label"><strong>Obrigatório</strong> — planilha SAP</div>
+            <div class="upload-hint">.xlsx</div>
+            <div class="upload-filename" id="fn-pedidos"></div>
+          </label>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-name">🧾 NFs (PDF)</div>
+          <label class="upload-zone" id="dz-nfs">
+            <input type="file" id="file-nfs" accept=".pdf" multiple>
+            <span class="upload-icon">🧾</span>
+            <div class="upload-label"><strong>Obrigatório</strong></div>
+            <div class="upload-hint">Vários PDFs (DANFE)</div>
+            <div class="upload-filename" id="fn-nfs"></div>
+          </label>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-name">🗂️ XMLs</div>
+          <label class="upload-zone" id="dz-xmls">
+            <input type="file" id="file-xmls" accept=".xml" multiple>
+            <span class="upload-icon">🗂️</span>
+            <div class="upload-label"><strong>Obrigatório</strong></div>
+            <div class="upload-hint">Vários .xml</div>
+            <div class="upload-filename" id="fn-xmls"></div>
+          </label>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-name">💳 Boletos <span class="badge-opt">opcional</span></div>
+          <label class="upload-zone" id="dz-boletos">
+            <input type="file" id="file-boletos" accept=".pdf" multiple>
+            <span class="upload-icon">💳</span>
+            <div class="upload-label">Se houver</div>
+            <div class="upload-hint">Vários PDFs</div>
+            <div class="upload-filename" id="fn-boletos"></div>
+          </label>
+        </div>
+      </div>
+      <div class="log-panel hidden" id="log-panel-1"><div id="log-1"></div></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="btn-processar" disabled>▶ Processar arquivos</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 2: FILTROS =============== -->
+  <section id="step-2" class="step-section hidden">
+    <div class="panel">
+      <h2>2. Filtros</h2>
+      <p class="hint">Selecione o recorte de pedidos que você quer validar nesta rodada.</p>
+      <div class="filtros">
+        <div class="filtro-item">
+          <label>Expedido?</label>
+          <select id="f-expedido">
+            <option value="NÃO" selected>NÃO</option>
+            <option value="SIM">SIM</option>
+            <option value="TODOS">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-item range">
+          <div style="flex:1">
+            <label>Data Expedição — de</label>
+            <input type="date" id="f-data-de">
+          </div>
+          <div style="flex:1">
+            <label>até</label>
+            <input type="date" id="f-data-ate">
+          </div>
+        </div>
+        <div class="filtro-item">
+          <label>Tipo Produto <span class="badge-opt" id="f-tipo-badge">Todos</span></label>
+          <div class="tipo-check-group" id="f-tipo-group">
+            <label class="tipo-check"><input type="checkbox" class="f-tipo-chk" value="CASCA" checked> Casca</label>
+            <label class="tipo-check"><input type="checkbox" class="f-tipo-chk" value="ÓLEO" checked> Óleo</label>
+            <label class="tipo-check"><input type="checkbox" class="f-tipo-chk" value="PASTEURIZADO" checked> Pasteurizado</label>
+          </div>
+        </div>
+        <div class="filtro-item">
+          <label>Status Pedido</label>
+          <select id="f-status">
+            <option value="TODOS" selected>Todos</option>
+            <option value="Aberto">Aberto</option>
+            <option value="Fechado">Fechado</option>
+          </select>
+        </div>
+      </div>
+      <p class="footnote">Pedidos com Status "Cancelado" ou Tipo Produto "Desconsiderar" já ficam sempre de fora, em qualquer filtro.</p>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="1">← Voltar</button>
+      <button class="primary" id="btn-validar">Validar pedidos</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 3: VALIDAÇÃO / PENDÊNCIAS =============== -->
+  <section id="step-3" class="step-section hidden">
+    <div class="panel">
+      <h2>3. Resultado da validação</h2>
+      <div class="cards" id="summary-cards"></div>
+
+      <div id="bloco-pendencias">
+        <div class="section-title">⚠ Pendências</div>
+        <div class="tbl-wrap"><table class="rev" id="tbl-pendencias"></table></div>
+        <div class="actions" style="justify-content:flex-start">
+          <button class="secondary small" id="btn-baixar-pendencias">⬇ Baixar pendências (Excel)</button>
+        </div>
+
+        <div class="section-title">📤 Enviar arquivos que faltam</div>
+        <p class="hint">Envie aqui os PDFs/XMLs restantes e clique em revalidar — não precisa reenviar os que já deram certo.</p>
+        <div class="upload-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="upload-card">
+            <div class="upload-card-name">🧾 Mais NFs</div>
+            <label class="upload-zone" id="dz-nfs-2">
+              <input type="file" id="file-nfs-2" accept=".pdf" multiple>
+              <span class="upload-icon">🧾</span>
+              <div class="upload-label">Adicionar</div>
+              <div class="upload-filename" id="fn-nfs-2"></div>
+            </label>
+          </div>
+          <div class="upload-card">
+            <div class="upload-card-name">🗂️ Mais XMLs</div>
+            <label class="upload-zone" id="dz-xmls-2">
+              <input type="file" id="file-xmls-2" accept=".xml" multiple>
+              <span class="upload-icon">🗂️</span>
+              <div class="upload-label">Adicionar</div>
+              <div class="upload-filename" id="fn-xmls-2"></div>
+            </label>
+          </div>
+          <div class="upload-card">
+            <div class="upload-card-name">💳 Mais Boletos</div>
+            <label class="upload-zone" id="dz-boletos-2">
+              <input type="file" id="file-boletos-2" accept=".pdf" multiple>
+              <span class="upload-icon">💳</span>
+              <div class="upload-label">Adicionar</div>
+              <div class="upload-filename" id="fn-boletos-2"></div>
+            </label>
+          </div>
+        </div>
+        <div class="log-panel hidden" id="log-panel-2"><div id="log-2"></div></div>
+      </div>
+
+      <div id="bloco-100" class="hidden">
+        <div class="section-title">✓ 100% validado</div>
+        <p class="hint">Todos os pedidos filtrados têm NF e XML enviados. Você já pode gerar a renomeação.</p>
+      </div>
+
+      <div class="section-title">ℹ Boletos — resumo informativo</div>
+      <p class="hint">A maioria dos clientes não exige boleto impresso. Isto é só para conhecimento, não bloqueia a validação.</p>
+      <div class="tbl-wrap"><table class="rev" id="tbl-boletos"></table></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="2">← Voltar aos filtros</button>
+      <button class="primary" id="btn-revalidar">↻ Revalidar</button>
+      <button class="ok" id="btn-ir-renomear" disabled>Gerar renomeação →</button>
+    </div>
+  </section>
+
+  <!-- =============== STEP 4: RENOMEAR / DOWNLOAD =============== -->
+  <section id="step-4" class="step-section hidden">
+    <div class="panel">
+      <h2>4. Renomeação e download</h2>
+      <p class="hint">Prévia dos arquivos renomeados e da estrutura de pastas que será usada no ZIP geral (Expedição dd.mm / Tipo Produto / Fluxo Logístico).</p>
+      <div class="cards" id="summary-cards-4"></div>
+      <div class="tbl-wrap"><table class="rev" id="tbl-renomear"></table></div>
+      <div class="actions" style="justify-content:flex-start;flex-wrap:wrap">
+        <button class="secondary" id="btn-dl-nfs">⬇ Baixar NFs (.zip)</button>
+        <button class="secondary" id="btn-dl-xmls">⬇ Baixar XMLs (.zip)</button>
+        <button class="secondary" id="btn-dl-boletos">⬇ Baixar Boletos (.zip)</button>
+        <button class="ok" id="btn-dl-geral">⬇ Baixar tudo organizado (.zip)</button>
+      </div>
+      <p class="footnote" id="dl-status"></p>
+    </div>
+    <div class="actions">
+      <button class="secondary" data-back="3">← Voltar</button>
+      <button class="secondary" id="btn-restart">Começar novo lote</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="raiar-footer">© Raiar Orgânicos S.A. · Uso interno · Automação Financeiro</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* =========================================================================
+   ESTADO GLOBAL
+   ========================================================================= */
+const SHEET_NAME = 'f_Pedidos - SAP';
+const TIPOS_VALIDOS = ['CASCA', 'ÓLEO', 'PASTEURIZADO'];
+
+const state = {
+  pedidos: [],                 // pedidos únicos (por Nr Pedido SAP + Nr Nota Sefaz), já sem Cancelado/Desconsiderar
+  files: { nfs: [], xmls: [], boletos: [] }, // {file, fileName, number, status:'ok'|'erro', errMsg}
+  filtered: [],                 // resultado do filtro aplicado sobre state.pedidos
+  validationRows: [],           // linhas com status calculado (ok / pendente) — inclui "ignorar"
+  renamePlan: [],                // plano final (somente OK, não ignorados)
+};
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+function logMsg(containerId, msg, isErr){
+  const panel = document.getElementById(containerId).closest('.log-panel') || document.getElementById(containerId).parentElement;
+  if(panel && panel.classList.contains('hidden')) panel.classList.remove('hidden');
+  const el = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'log-line' + (isErr ? ' err' : '');
+  div.textContent = msg;
+  el.appendChild(div);
+  el.parentElement.scrollTop = el.parentElement.scrollHeight;
+}
+
+function normalizeNumber(v){
+  if(v === null || v === undefined || v === '') return '';
+  const digits = String(v).replace(/\D/g, '');
+  if(!digits) return '';
+  return String(parseInt(digits, 10));
+}
+
+function sanitizeFolder(name){
+  return String(name || 'SEM-INFORMACAO').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g,' ').trim() || 'SEM-INFORMACAO';
+}
+
+// Converte valor de data vindo da planilha (Date, serial Excel, ou string) para objeto Date
+// à meia-noite no horário LOCAL do navegador, preservando o dia/mês/ano do Excel.
+//
+// Importante: o SheetJS (com cellDates:true) e a conversão manual de serial do Excel
+// constroem o Date usando componentes UTC (ex.: Excel "31/08/2026" vira
+// 2026-08-31T00:00:00Z). Se o navegador estiver num fuso atrás de UTC (ex.: Brasil,
+// UTC-3), ler esse Date com getDate()/getMonth() locais devolve o dia ANTERIOR
+// (30/08 às 21h). Isso fazia pedidos do dia certo ficarem fora do filtro de data.
+// Por isso, aqui sempre extraímos o dia/mês/ano em UTC e remontamos como data local.
+function normalizeToLocalMidnight(d){
+  if(!d || isNaN(d)) return null;
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+function toDate(v){
+  if(!v && v !== 0) return null;
+  if(v instanceof Date && !isNaN(v)) return normalizeToLocalMidnight(v);
+  if(typeof v === 'number'){
+    // serial Excel (dias desde 1899-12-30), construído em UTC
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return normalizeToLocalMidnight(d);
+  }
+  if(typeof v === 'string'){
+    const m = v.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if(m){
+      let [, dd, mm, yy] = m;
+      if(yy.length === 2) yy = '20' + yy;
+      // já são componentes de calendário (não timestamp) — monta direto em local
+      const d = new Date(+yy, +mm - 1, +dd);
+      return isNaN(d) ? null : d;
+    }
+    const d = new Date(v);
+    return normalizeToLocalMidnight(d);
+  }
+  return null;
+}
+
+function pad2(n){ return String(n).padStart(2, '0'); }
+function fmtDateBR(d){ return d ? `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}` : ''; }
+function fmtDateFolder(d){ return d ? `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}` : 'SEM-DATA'; }
+function fmtDateInput(d){ return d ? `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}` : ''; }
+
+function tipoGrupo(tipo){
+  return tipo === 'PASTEURIZADO' ? 'PASTEURIZADO' : 'CASCA E ÓLEO';
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* =========================================================================
+   NAVEGAÇÃO ENTRE ETAPAS
+   ========================================================================= */
+function goStep(n){
+  document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('step-' + n).classList.remove('hidden');
+  document.querySelectorAll('#steps .step-card').forEach(c => {
+    const s = +c.dataset.step;
+    c.classList.remove('active', 'done');
+    if(s < n) c.classList.add('done');
+    if(s === n) c.classList.add('active');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => goStep(+btn.dataset.back));
+});
+
+/* =========================================================================
+   UPLOAD ZONES
+   ========================================================================= */
+function wireSingleUpload(zoneId, inputId, fnId, onChange){
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  input.addEventListener('change', () => {
+    const f = input.files[0];
+    if(!f) return;
+    zone.classList.add('has-file');
+    document.getElementById(fnId).textContent = f.name;
+    onChange(f);
+  });
+}
+function wireMultiUpload(zoneId, inputId, fnId, onChange){
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  input.addEventListener('change', () => {
+    const files = Array.from(input.files);
+    if(!files.length) return;
+    zone.classList.add('has-file');
+    document.getElementById(fnId).textContent = files.length + ' arquivo(s) selecionado(s)';
+    onChange(files);
+    input.value = ''; // permite selecionar mais depois sem perder os já adicionados
+  });
+}
+
+let pedidosFile = null;
+let nfsQueue = [], xmlsQueue = [], boletosQueue = [];
+
+wireSingleUpload('dz-pedidos', 'file-pedidos', 'fn-pedidos', f => {
+  pedidosFile = f;
+  checkStep1Ready();
+});
+wireMultiUpload('dz-nfs', 'file-nfs', 'fn-nfs', files => { nfsQueue = nfsQueue.concat(files); checkStep1Ready(); });
+wireMultiUpload('dz-xmls', 'file-xmls', 'fn-xmls', files => { xmlsQueue = xmlsQueue.concat(files); checkStep1Ready(); });
+wireMultiUpload('dz-boletos', 'file-boletos', 'fn-boletos', files => { boletosQueue = boletosQueue.concat(files); });
+
+function checkStep1Ready(){
+  document.getElementById('btn-processar').disabled = !(pedidosFile && nfsQueue.length && xmlsQueue.length);
+}
+
+// Uploads adicionais (etapa de pendências)
+let nfsQueue2 = [], xmlsQueue2 = [], boletosQueue2 = [];
+wireMultiUpload('dz-nfs-2', 'file-nfs-2', 'fn-nfs-2', files => { nfsQueue2 = nfsQueue2.concat(files); });
+wireMultiUpload('dz-xmls-2', 'file-xmls-2', 'fn-xmls-2', files => { xmlsQueue2 = xmlsQueue2.concat(files); });
+wireMultiUpload('dz-boletos-2', 'file-boletos-2', 'fn-boletos-2', files => { boletosQueue2 = boletosQueue2.concat(files); });
+
+/* =========================================================================
+   EXTRAÇÃO DE TEXTO / NÚMERO DA NF
+   ========================================================================= */
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for(let p = 1; p <= pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+function extractNfFromDanfeText(text){
+  let m = text.match(/N[ºo°.]{1,2}\s*(\d{3}\.\d{3}\.\d{3})/);
+  if(m) return String(parseInt(m[1].replace(/\./g, ''), 10));
+  m = text.match(/ACESSO\s*([\d\s]{40,70})/i);
+  if(m){
+    const digits = m[1].replace(/\D/g, '');
+    if(digits.length >= 44){
+      const chave = digits.slice(0, 44);
+      const nf = chave.substring(25, 34).replace(/^0+/, '');
+      if(nf) return nf;
+    }
+  }
+  return null;
+}
+
+function extractNfFromBoletoText(text){
+  let m = text.match(/\d{2}\/\d{2}\/\d{4}\s+(\d{4,9})\s+\d+\s+DM/);
+  if(m) return String(parseInt(m[1], 10));
+  m = text.match(/(\d{4,9})\s+1\s+\d{10,}/);
+  if(m) return String(parseInt(m[1], 10));
+  return null;
+}
+
+function extractNfFromXmlText(text){
+  const m = text.match(/<nNF>(\d+)<\/nNF>/);
+  return m ? String(parseInt(m[1], 10)) : null;
+}
+
+async function readFileAsText(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsText(file);
+  });
+}
+
+async function processFileList(files, kind, logId){
+  const out = [];
+  for(const file of files){
+    const entry = { file, fileName: file.name, number: null, status: 'erro', errMsg: '' };
+    try{
+      let text = '';
+      if(kind === 'xml'){
+        text = await readFileAsText(file);
+        entry.number = extractNfFromXmlText(text);
+      } else {
+        text = await extractPdfText(file);
+        entry.number = kind === 'nf' ? extractNfFromDanfeText(text) : extractNfFromBoletoText(text);
+      }
+      if(entry.number){
+        entry.status = 'ok';
+        logMsg(logId, `✓ ${file.name} → NF ${entry.number}`);
+      } else {
+        entry.errMsg = 'Não foi possível identificar o número da NF automaticamente';
+        logMsg(logId, `✗ ${file.name} — não foi possível ler o número da NF`, true);
+      }
+    } catch(e){
+      entry.errMsg = 'Erro ao ler o arquivo: ' + e.message;
+      logMsg(logId, `✗ ${file.name} — erro: ${e.message}`, true);
+    }
+    out.push(entry);
+  }
+  return out;
+}
+
+function buildNumberMap(entries){
+  const map = new Map();
+  entries.filter(e => e.status === 'ok').forEach(e => {
+    if(!map.has(e.number)) map.set(e.number, []);
+    map.get(e.number).push(e);
+  });
+  return map;
+}
+
+function warnDuplicates(entries, label, logId){
+  const map = buildNumberMap(entries);
+  map.forEach((list, num) => {
+    if(list.length > 1){
+      logMsg(logId, `⚠ ${label}: mais de um arquivo identificado com a NF ${num} (${list.map(e => e.fileName).join(', ')}) — será usado apenas o primeiro.`, true);
+    }
+  });
+}
+
+/* =========================================================================
+   PARSER DA PLANILHA DE PEDIDOS
+   ========================================================================= */
+// Colunas localizadas PELO NOME do cabeçalho, não pela posição/letra da coluna.
+// Isso evita quebrar quando a planilha tem colunas em branco no início (ex.: a
+// coluna A vazia), que fazem o leitor de Excel numerar tudo a partir de B — ou
+// quando alguma coluna é inserida/removida no futuro.
+const COLUNAS_ESPERADAS = {
+  tipoProduto: 'Tipo Produto',
+  expedido: 'Expedido?',
+  dataExpedicao: 'Data Expedição',
+  fluxoLogistico: 'Fluxo Logistico',
+  statusDocumento: 'Status do Documento',
+  nrPedidoSAP: 'Nr. do Pedido SAP',
+  codPN: 'Cod. PN',
+  razaoSocial: 'Nome PN',
+  nomeFantasia: 'Nome Fantasia',
+  nrNotaSefaz: 'Nr. Nota Sefaz',
+};
+
+function localizarColunas(aoa){
+  for(let r = 0; r < Math.min(aoa.length, 15); r++){
+    const linha = aoa[r] || [];
+    const norm = linha.map(c => (c === null || c === undefined) ? '' : String(c).trim());
+    if(norm.includes('Tipo Produto') && norm.includes('Expedido?')){
+      const idx = {};
+      const faltando = [];
+      Object.entries(COLUNAS_ESPERADAS).forEach(([chave, titulo]) => {
+        const i = norm.indexOf(titulo);
+        if(i === -1) faltando.push(titulo); else idx[chave] = i;
+      });
+      if(faltando.length){
+        throw new Error(`Não encontrei a(s) coluna(s) "${faltando.join('", "')}" no cabeçalho da planilha (linha ${r + 1}). Confira se o título dessas colunas não mudou na aba "${SHEET_NAME}".`);
+      }
+      return { headerRow: r, idx };
+    }
+  }
+  throw new Error('Não encontrei a linha de cabeçalho da planilha (procurei pelas colunas "Tipo Produto" e "Expedido?" nas primeiras linhas). Confira se a planilha enviada é o modelo correto.');
+}
+
+async function parsePedidos(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+  const sheetName = wb.SheetNames.includes(SHEET_NAME) ? SHEET_NAME : wb.SheetNames.find(n => n.toLowerCase().includes('pedidos'));
+  if(!sheetName) throw new Error(`Aba "${SHEET_NAME}" não encontrada na planilha.`);
+  const ws = wb.Sheets[sheetName];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+
+  const { headerRow, idx } = localizarColunas(aoa);
+
+  const map = new Map();
+  for(let i = headerRow + 1; i < aoa.length; i++){
+    const row = aoa[i];
+    if(!row) continue;
+    const tipoProduto = row[idx.tipoProduto];
+    const statusDocumento = row[idx.statusDocumento];
+    const nrPedidoSAP = row[idx.nrPedidoSAP];
+    if(!nrPedidoSAP) continue;
+    if(!TIPOS_VALIDOS.includes(tipoProduto)) continue;       // exclui DESCONSIDERAR / vazio
+    if(statusDocumento === 'Cancelado') continue;              // exclui cancelados
+
+    const nrNotaSefaz = normalizeNumber(row[idx.nrNotaSefaz]);
+    const key = nrPedidoSAP + '::' + nrNotaSefaz;
+    if(map.has(key)) continue;
+
+    map.set(key, {
+      tipoProduto,
+      expedido: (row[idx.expedido] || '').toString().trim().toUpperCase(),
+      dataExpedicao: toDate(row[idx.dataExpedicao]),
+      fluxoLogistico: (row[idx.fluxoLogistico] || '').toString().trim(),
+      statusDocumento,
+      nrPedidoSAP,
+      codPN: row[idx.codPN],
+      razaoSocial: row[idx.razaoSocial],
+      nomeFantasia: row[idx.nomeFantasia],
+      nrNotaSefaz,
+    });
+  }
+  return Array.from(map.values());
+}
+
+/* =========================================================================
+   ETAPA 1 → PROCESSAR
+   ========================================================================= */
+document.getElementById('btn-processar').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-processar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Processando…';
+  document.getElementById('log-panel-1').classList.remove('hidden');
+  document.getElementById('log-1').innerHTML = '';
+
+  try{
+    logMsg('log-1', 'Lendo planilha de pedidos…');
+    state.pedidos = await parsePedidos(pedidosFile);
+    logMsg('log-1', `✓ ${state.pedidos.length} pedidos únicos carregados (após excluir Cancelado/Desconsiderar).`);
+
+    logMsg('log-1', `Lendo ${nfsQueue.length} NF(s)…`);
+    state.files.nfs = await processFileList(nfsQueue, 'nf', 'log-1');
+    warnDuplicates(state.files.nfs, 'NFs', 'log-1');
+
+    logMsg('log-1', `Lendo ${xmlsQueue.length} XML(s)…`);
+    state.files.xmls = await processFileList(xmlsQueue, 'xml', 'log-1');
+    warnDuplicates(state.files.xmls, 'XMLs', 'log-1');
+
+    if(boletosQueue.length){
+      logMsg('log-1', `Lendo ${boletosQueue.length} boleto(s)…`);
+      state.files.boletos = await processFileList(boletosQueue, 'boleto', 'log-1');
+      warnDuplicates(state.files.boletos, 'Boletos', 'log-1');
+    }
+
+    // Preenche filtro de data com o mês atual
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    document.getElementById('f-data-de').value = fmtDateInput(primeiroDia);
+    document.getElementById('f-data-ate').value = fmtDateInput(ultimoDia);
+
+    logMsg('log-1', 'Pronto! Avançando para os filtros…');
+    setTimeout(() => goStep(2), 400);
+  } catch(e){
+    logMsg('log-1', 'Erro: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '▶ Processar arquivos';
+  }
+});
+
+/* =========================================================================
+   ETAPA 2 → FILTROS → VALIDAR
+   ========================================================================= */
+document.getElementById('btn-validar').addEventListener('click', () => {
+  runValidation();
+  goStep(3);
+});
+document.getElementById('btn-revalidar').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-revalidar');
+  btn.disabled = true;
+  try{
+    if(nfsQueue2.length){
+      logMsg('log-2', `Lendo ${nfsQueue2.length} NF(s) adicionais…`);
+      state.files.nfs = state.files.nfs.concat(await processFileList(nfsQueue2, 'nf', 'log-2'));
+      nfsQueue2 = [];
+      warnDuplicates(state.files.nfs, 'NFs', 'log-2');
+    }
+    if(xmlsQueue2.length){
+      logMsg('log-2', `Lendo ${xmlsQueue2.length} XML(s) adicionais…`);
+      state.files.xmls = state.files.xmls.concat(await processFileList(xmlsQueue2, 'xml', 'log-2'));
+      xmlsQueue2 = [];
+      warnDuplicates(state.files.xmls, 'XMLs', 'log-2');
+    }
+    if(boletosQueue2.length){
+      logMsg('log-2', `Lendo ${boletosQueue2.length} boleto(s) adicionais…`);
+      state.files.boletos = state.files.boletos.concat(await processFileList(boletosQueue2, 'boleto', 'log-2'));
+      boletosQueue2 = [];
+      warnDuplicates(state.files.boletos, 'Boletos', 'log-2');
+    }
+    runValidation();
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+function getTiposSelecionados(){
+  return Array.from(document.querySelectorAll('.f-tipo-chk:checked')).map(cb => cb.value);
+}
+
+// Atualiza o badge "Todos / N selecionados" e impede ficar com zero tipos marcados
+document.querySelectorAll('.f-tipo-chk').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const marcados = document.querySelectorAll('.f-tipo-chk:checked');
+    if(marcados.length === 0){
+      cb.checked = true; // não deixa desmarcar todos — sem tipo selecionado não faria sentido
+      return;
+    }
+    const total = document.querySelectorAll('.f-tipo-chk').length;
+    document.getElementById('f-tipo-badge').textContent = marcados.length === total ? 'Todos' : `${marcados.length} selecionado(s)`;
+  });
+});
+
+function applyFiltros(){
+  const expedidoF = document.getElementById('f-expedido').value;
+  const tiposF = getTiposSelecionados();
+  const statusF = document.getElementById('f-status').value;
+  const deStr = document.getElementById('f-data-de').value;
+  const ateStr = document.getElementById('f-data-ate').value;
+  const de = deStr ? new Date(deStr + 'T00:00:00') : null;
+  const ate = ateStr ? new Date(ateStr + 'T23:59:59') : null;
+
+  return state.pedidos.filter(p => {
+    if(expedidoF !== 'TODOS' && p.expedido !== expedidoF) return false;
+    if(!tiposF.includes(p.tipoProduto)) return false;
+    if(statusF !== 'TODOS' && p.statusDocumento !== statusF) return false;
+    if(de && p.dataExpedicao && p.dataExpedicao < de) return false;
+    if(ate && p.dataExpedicao && p.dataExpedicao > ate) return false;
+    return true;
+  });
+}
+
+function runValidation(){
+  state.filtered = applyFiltros();
+  const nfMap = buildNumberMap(state.files.nfs);
+  const xmlMap = buildNumberMap(state.files.xmls);
+  const boletoMap = buildNumberMap(state.files.boletos);
+
+  state.validationRows = state.filtered.map(p => {
+    let status, motivo;
+    if(!p.nrNotaSefaz){
+      status = 'pendente'; motivo = 'SEM NF NO SAP';
+    } else if(!nfMap.has(p.nrNotaSefaz)){
+      status = 'pendente'; motivo = 'NF NÃO ENVIADA';
+    } else if(!xmlMap.has(p.nrNotaSefaz)){
+      status = 'pendente'; motivo = 'XML NÃO ENVIADO';
+    } else {
+      status = 'ok'; motivo = '';
+    }
+    return { pedido: p, status, motivo, ignorar: false, temBoleto: p.nrNotaSefaz ? boletoMap.has(p.nrNotaSefaz) : false };
+  });
+
+  renderValidationUI(nfMap, xmlMap, boletoMap);
+}
+
+function renderValidationUI(nfMap, xmlMap, boletoMap){
+  const total = state.validationRows.length;
+  const ok = state.validationRows.filter(r => r.status === 'ok').length;
+  const pendentes = state.validationRows.filter(r => r.status === 'pendente' && !r.ignorar);
+  const semNota = state.validationRows.filter(r => r.motivo === 'SEM NF NO SAP').length;
+
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="card"><div class="n">${total}</div><div class="l">Pedidos no filtro</div></div>
+    <div class="card"><div class="n ok">${ok}</div><div class="l">Faturados e enviados</div></div>
+    <div class="card"><div class="n warn">${pendentes.length}</div><div class="l">Pendentes</div></div>
+    <div class="card"><div class="n">${semNota}</div><div class="l">Sem NF no SAP</div></div>
+    <div class="card"><div class="n">${state.files.boletos.length}</div><div class="l">Boletos enviados</div></div>
+  `;
+
+  const tbl = document.getElementById('tbl-pendencias');
+  if(!pendentes.length){
+    tbl.innerHTML = '';
+    document.getElementById('bloco-pendencias').classList.add('hidden');
+    document.getElementById('bloco-100').classList.remove('hidden');
+    document.getElementById('btn-ir-renomear').disabled = false;
+  } else {
+    document.getElementById('bloco-pendencias').classList.remove('hidden');
+    document.getElementById('bloco-100').classList.add('hidden');
+    document.getElementById('btn-ir-renomear').disabled = true;
+    let html = '<thead><tr><th>Nr. Pedido SAP</th><th>Cod. PN</th><th>Razão Social</th><th>Nome Fantasia</th><th>Nr. NF</th><th>Motivo</th><th>Ignorar nesta rodada</th></tr></thead><tbody>';
+    state.validationRows.forEach((r, idx) => {
+      if(r.status !== 'pendente') return;
+      html += `<tr>
+        <td>${r.pedido.nrPedidoSAP}</td>
+        <td>${r.pedido.codPN || ''}</td>
+        <td>${r.pedido.razaoSocial || ''}</td>
+        <td>${r.pedido.nomeFantasia || ''}</td>
+        <td>${r.pedido.nrNotaSefaz || '—'}</td>
+        <td><span class="tag warn">${r.motivo}</span></td>
+        <td class="checkbox-cell"><input type="checkbox" data-idx="${idx}" class="chk-ignorar" ${r.ignorar ? 'checked' : ''}></td>
+      </tr>`;
+    });
+    html += '</tbody>';
+    tbl.innerHTML = html;
+    tbl.querySelectorAll('.chk-ignorar').forEach(cb => {
+      cb.addEventListener('change', () => {
+        state.validationRows[+cb.dataset.idx].ignorar = cb.checked;
+        renderValidationUI(nfMap, xmlMap, boletoMap);
+      });
+    });
+  }
+
+  // resumo de boletos (informativo)
+  const tblB = document.getElementById('tbl-boletos');
+  const comBoleto = state.validationRows.filter(r => r.temBoleto);
+  if(!comBoleto.length){
+    tblB.innerHTML = '<tr><td class="empty-note">Nenhum boleto identificado para os pedidos deste filtro.</td></tr>';
+  } else {
+    let html = '<thead><tr><th>Nr. NF</th><th>Nome Fantasia</th></tr></thead><tbody>';
+    comBoleto.forEach(r => {
+      html += `<tr><td>${r.pedido.nrNotaSefaz}</td><td>${r.pedido.nomeFantasia || ''}</td></tr>`;
+    });
+    html += '</tbody>';
+    tblB.innerHTML = html;
+  }
+}
+
+/* =========================================================================
+   ETAPA 3 → RENOMEAR
+   ========================================================================= */
+document.getElementById('btn-ir-renomear').addEventListener('click', () => {
+  buildRenamePlan();
+  goStep(4);
+});
+
+function buildRenamePlan(){
+  const nfMap = buildNumberMap(state.files.nfs);
+  const xmlMap = buildNumberMap(state.files.xmls);
+  const boletoMap = buildNumberMap(state.files.boletos);
+
+  state.renamePlan = state.validationRows
+    .filter(r => r.status === 'ok')
+    .map(r => {
+      const p = r.pedido;
+      const nf = p.nrNotaSefaz;
+      // PASTEURIZADO não separa por transportador/fluxo logístico — para na etapa anterior.
+      const pasta = p.tipoProduto === 'PASTEURIZADO'
+        ? `Expedição ${fmtDateFolder(p.dataExpedicao)}/EXPEDIÇÃO ${tipoGrupo(p.tipoProduto)}`
+        : `Expedição ${fmtDateFolder(p.dataExpedicao)}/EXPEDIÇÃO ${tipoGrupo(p.tipoProduto)}/${sanitizeFolder(p.fluxoLogistico)}`;
+      return {
+        nf,
+        nomeFantasia: p.nomeFantasia,
+        pasta,
+        nfFile: nfMap.get(nf)[0],
+        xmlFile: xmlMap.get(nf)[0],
+        boletoFile: boletoMap.has(nf) ? boletoMap.get(nf)[0] : null,
+        nomeNf: `${nf}_1.pdf`,
+        nomeBoleto: `${nf}_2.pdf`,
+        nomeXml: `${nf}_3.xml`,
+      };
+    });
+
+  document.getElementById('summary-cards-4').innerHTML = `
+    <div class="card"><div class="n ok">${state.renamePlan.length}</div><div class="l">NFs prontas</div></div>
+    <div class="card"><div class="n">${state.renamePlan.filter(r => r.boletoFile).length}</div><div class="l">Com boleto</div></div>
+    <div class="card"><div class="n">${new Set(state.renamePlan.map(r => r.pasta)).size}</div><div class="l">Pastas geradas</div></div>
+  `;
+
+  let html = '<thead><tr><th>Nr. NF</th><th>Nome Fantasia</th><th>Pasta de destino</th><th>Novo nome NF</th><th>Novo nome Boleto</th><th>Novo nome XML</th></tr></thead><tbody>';
+  state.renamePlan.forEach(r => {
+    html += `<tr>
+      <td>${r.nf}</td>
+      <td>${r.nomeFantasia || ''}</td>
+      <td>${r.pasta}</td>
+      <td>${r.nomeNf}</td>
+      <td>${r.boletoFile ? r.nomeBoleto : '<span class="tag muted">sem boleto</span>'}</td>
+      <td>${r.nomeXml}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('tbl-renomear').innerHTML = html;
+}
+
+/* =========================================================================
+   ETAPA 4 → DOWNLOADS
+   ========================================================================= */
+async function zipFlat(items, mapFn){
+  const zip = new JSZip();
+  for(const item of items){
+    const { name, blob } = await mapFn(item);
+    if(blob) zip.file(name, blob);
+  }
+  return zip.generateAsync({ type: 'blob' });
+}
+
+document.getElementById('btn-dl-nfs').addEventListener('click', async () => {
+  const blob = await zipFlat(state.renamePlan, async r => ({ name: r.nomeNf, blob: r.nfFile.file }));
+  downloadBlob(blob, 'NFs_renomeadas.zip');
+});
+document.getElementById('btn-dl-xmls').addEventListener('click', async () => {
+  const blob = await zipFlat(state.renamePlan, async r => ({ name: r.nomeXml, blob: r.xmlFile.file }));
+  downloadBlob(blob, 'XMLs_renomeados.zip');
+});
+document.getElementById('btn-dl-boletos').addEventListener('click', async () => {
+  const comBoleto = state.renamePlan.filter(r => r.boletoFile);
+  if(!comBoleto.length){
+    document.getElementById('dl-status').textContent = 'Nenhum boleto enviado para este lote.';
+    return;
+  }
+  const blob = await zipFlat(comBoleto, async r => ({ name: r.nomeBoleto, blob: r.boletoFile.file }));
+  downloadBlob(blob, 'Boletos_renomeados.zip');
+});
+document.getElementById('btn-dl-geral').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-dl-geral');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Gerando ZIP…';
+  try{
+    const zip = new JSZip();
+    state.renamePlan.forEach(r => {
+      const folder = zip.folder(r.pasta);
+      folder.file(r.nomeNf, r.nfFile.file);
+      folder.file(r.nomeXml, r.xmlFile.file);
+      if(r.boletoFile) folder.file(r.nomeBoleto, r.boletoFile.file);
+    });
+    const blob = await zip.generateAsync({ type: 'blob' });
+    downloadBlob(blob, 'Expedicao_organizada.zip');
+    document.getElementById('dl-status').textContent = `ZIP gerado com ${state.renamePlan.length} NF(s) em ${new Set(state.renamePlan.map(r => r.pasta)).size} pasta(s).`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⬇ Baixar tudo organizado (.zip)';
+  }
+});
+
+/* =========================================================================
+   PENDÊNCIAS → EXCEL
+   ========================================================================= */
+document.getElementById('btn-baixar-pendencias').addEventListener('click', () => {
+  const rows = [['Nr. Pedido SAP', 'Cod. PN', 'Razão Social', 'Nome Fantasia', 'Nr. NF', 'Motivo']];
+  state.validationRows.filter(r => r.status === 'pendente').forEach(r => {
+    rows.push([r.pedido.nrPedidoSAP, r.pedido.codPN, r.pedido.razaoSocial, r.pedido.nomeFantasia, r.pedido.nrNotaSefaz || '', r.motivo]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pendencias');
+  XLSX.writeFile(wb, 'Pendencias_NFs.xlsx');
+});
+
+/* =========================================================================
+   REINICIAR
+   ========================================================================= */
+document.getElementById('btn-restart').addEventListener('click', () => {
+  location.reload();
+});
+</script>
+</body>
+</html>
