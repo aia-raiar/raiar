@@ -6,7 +6,7 @@
 <title>Portal de Pedidos SAP — Raiar Orgânicos</title>
 
 <!-- MSAL (autenticação Azure AD) -->
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js"></script>
 <!-- SheetJS (leitura/exportação de Excel) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -302,7 +302,7 @@ const msalConfig = {
   },
   cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
 };
-const msalInstance = new msal.PublicClientApplication(msalConfig);
+let msalInstance = null; // criada de forma protegida no fim do script
 let contaAtiva = null;
 
 async function inicializarMsal(){
@@ -327,6 +327,10 @@ async function inicializarMsal(){
 }
 
 async function fazerLogin(){
+  if (!msalInstance){
+    mostrarStatus("As bibliotecas externas (MSAL) não carregaram corretamente. Verifique sua conexão e recarregue a página.", "erro");
+    return;
+  }
   try{
     // loginRedirect é mais confiável que loginPopup em navegadores mobile,
     // onde pop-ups costumam ser bloqueados silenciosamente.
@@ -337,6 +341,7 @@ async function fazerLogin(){
 }
 
 function fazerLogout(){
+  if (!msalInstance) return;
   msalInstance.logoutRedirect();
 }
 
@@ -716,7 +721,20 @@ document.getElementById("btnLimpar").addEventListener("click", () => {
 document.getElementById("btnMostrarTudo").addEventListener("click", mostrarTodosOsPedidos);
 document.getElementById("btnExportar").addEventListener("click", exportarExcel);
 
-inicializarMsal();
+// Inicialização protegida: se alguma biblioteca externa (CDN) não carregar,
+// mostra um erro visível em vez de deixar a página "sem reação" ao clique.
+if (typeof msal === "undefined"){
+  mostrarStatus("Erro: a biblioteca MSAL (login Microsoft) não carregou. Verifique sua conexão com a internet e recarregue a página. Se persistir, avise o suporte.", "erro");
+} else if (typeof XLSX === "undefined"){
+  mostrarStatus("Erro: a biblioteca SheetJS (leitura de Excel) não carregou. Verifique sua conexão com a internet e recarregue a página.", "erro");
+} else {
+  try{
+    msalInstance = new msal.PublicClientApplication(msalConfig);
+    inicializarMsal();
+  }catch(e){
+    mostrarStatus("Erro ao inicializar autenticação: " + e.message, "erro");
+  }
+}
 </script>
 </body>
 </html>
