@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#254D69">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Embalagens">
+<title>Central de Embalagens — Raiar Orgânicos</title>
+
+<!-- MSAL (autenticação Microsoft Entra ID) -->
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js"></script>
+
+<style>
+  :root{
+    --marinho:#254D69;
+    --marinho-escuro:#1a3a50;
+    --azul:#5CDCF2;
+    --azul-claro:#E2F7FB;
+    --rosa:#FFA385;
+    --rosa-claro:#FFEDE6;
+    --amarelo:#FFD043;
+    --amarelo-claro:#FFF6D8;
+    --cinza-bg:#F4F6F8;
+    --cinza-borda:#DDE3E8;
+    --cinza-texto:#4A5560;
+    --linha-par:#F7F9FA;
+    --erro:#B43F22;
+    --raio:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;
+    background:var(--cinza-bg);color:#2A2F35;font-size:14px;line-height:1.45;
+  }
+  button,input,select{font-family:inherit;}
+
+  /* ---------- Shell ---------- */
+  .app-shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:220px;flex-shrink:0;background:var(--marinho);display:flex;flex-direction:column;
+    position:sticky;top:0;height:100vh;overflow-y:auto;transition:width .15s ease;
+  }
+  .sidebar-logo{
+    padding:18px 16px 14px;display:flex;justify-content:center;align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:8px;min-height:72px;
+  }
+  .sidebar-logo img{width:100%;max-width:140px;height:auto;display:block;}
+  .sidebar-logo .logo-texto{color:#fff;font-weight:bold;font-size:17px;text-align:center;line-height:1.2;}
+  .sidebar-logo .logo-texto small{display:block;font-weight:normal;font-size:11px;color:#C9DCE6;margin-top:2px;}
+  .nav-secao{font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#8FB0C4;padding:12px 18px 4px;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;width:100%;padding:11px 18px;background:none;border:none;
+    border-left:3px solid transparent;color:#C9DCE6;font-size:13px;text-align:left;cursor:pointer;
+  }
+  .nav-item .icon{width:20px;height:20px;flex-shrink:0;}
+  .nav-item:hover:not(:disabled){background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:rgba(255,255,255,.10);border-left-color:var(--azul);color:#fff;font-weight:bold;}
+  .nav-item:disabled{cursor:default;opacity:.55;}
+  .nav-item .tag{margin-left:auto;font-size:9.5px;background:rgba(255,255,255,.12);border-radius:8px;padding:1px 6px;white-space:nowrap;}
+  .sidebar-toggle{
+    margin-top:auto;background:none;border:none;color:#C9DCE6;cursor:pointer;padding:12px 0;
+    display:flex;justify-content:center;border-top:1px solid rgba(255,255,255,.12);
+  }
+  .sidebar-toggle:hover{color:#fff;background:rgba(255,255,255,.06);}
+  .sidebar-toggle svg{width:18px;height:18px;transition:transform .2s ease;}
+  .sidebar.collapsed{width:60px;}
+  .sidebar.collapsed .sidebar-logo,.sidebar.collapsed .nav-label,.sidebar.collapsed .tag,.sidebar.collapsed .nav-secao{display:none;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:14px 4px;}
+  .sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg);}
+
+  .main-area{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  header.top{
+    background:var(--marinho);color:#fff;padding:14px 20px;display:flex;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,.15);
+    position:sticky;top:0;z-index:20;
+  }
+  header.top .brand{display:flex;flex-direction:column;line-height:1.2;}
+  header.top .brand .title{font-size:16px;font-weight:bold;}
+  header.top .brand .subtitulo{font-size:11.5px;color:#C9DCE6;margin-top:3px;}
+  #authArea{display:flex;align-items:center;gap:10px;font-size:13px;}
+  #authArea .nome{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .btn{
+    cursor:pointer;border:none;border-radius:8px;padding:9px 15px;font-size:13px;font-weight:bold;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn svg{width:16px;height:16px;}
+  .btn-primary{background:var(--azul);color:var(--marinho-escuro);}
+  .btn-primary:hover{background:#48c8e0;}
+  .btn-secondary{background:#fff;color:var(--marinho);border:1px solid var(--cinza-borda);}
+  .btn-secondary:hover{background:var(--cinza-bg);}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+
+  main{padding:20px 20px 40px;max-width:1400px;width:100%;margin:0 auto;flex:1;}
+
+  /* ---------- Rodapé com versão ---------- */
+  .rodape-app{
+    border-top:1px solid var(--cinza-borda);background:#fff;color:var(--cinza-texto);font-size:12px;
+    padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .rodape-app .versao{font-weight:bold;color:var(--marinho);background:var(--azul-claro);border-radius:999px;padding:3px 10px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  #statusPanel{
+    background:#fff;border:1px solid var(--cinza-borda);border-left:4px solid var(--azul);
+    border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:14px;display:none;
+  }
+  #statusPanel.visivel{display:block;}
+  #statusPanel.erro{border-left-color:var(--rosa);color:#8a3b28;}
+
+  .migalha{display:flex;align-items:center;gap:8px;color:var(--cinza-texto);font-size:12.5px;margin-bottom:6px;flex-wrap:wrap;}
+  .migalha a{color:var(--marinho);text-decoration:none;cursor:pointer;}
+  .migalha a:hover{text-decoration:underline;}
+  h1{margin:0 0 4px;font-size:22px;color:var(--marinho);}
+  .sub{margin:0 0 20px;color:var(--cinza-texto);}
+
+  /* ---------- Boas-vindas ---------- */
+  .boas-vindas{
+    background:var(--marinho);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:22px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  }
+  .boas-vindas h2{margin:0 0 4px;font-size:21px;}
+  .boas-vindas p{margin:0;color:#C9DCE6;}
+  .boas-vindas .pontos{display:flex;gap:8px;}
+  .boas-vindas .pontos span{width:14px;height:14px;border-radius:50%;}
+
+  /* ---------- Cards de módulo ---------- */
+  .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .card-mod{
+    background:#fff;border:1px solid var(--cinza-borda);border-radius:var(--raio);padding:18px;text-align:left;
+    cursor:pointer;display:flex;flex-direction:column;gap:9px;min-height:150px;
+    transition:transform .12s ease, box-shadow .12s ease;font-size:14px;color:inherit;
+  }
+  .card-mod:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 16px rgba(37,77,105,.12);}
+  .card-mod:disabled{cursor:default;opacity:.6;}
+  .card-mod .ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--marinho);}
+  .card-mod .ic svg{width:22px;height:22px;}
+  .ic.azul{background:var(--azul);} .ic.amarelo{background:var(--amarelo);} .ic.rosa{background:var(--rosa);}
+  .card-mod h3{margin:0;font-size:15.5px;color:var(--marinho);}
+  .card-mod p{margin:0;color:var(--cinza-texto);font-size:12.5px;}
+  .selo{align-self:flex-start;font-size:10.5px;font-weight:bold;padding:2px 9px;border-radius:999px;background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-borda);}
+
+  /* ---------- Barra / resumo ---------- */
+  .barra{
+    background:#fff;border:1px solid var(--cinza-borda);border-radius:8px;padding:12px 14px;margin-bottom:14px;
+    display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;
+  }
+  .campo-filtro{display:flex;flex-direction:column;gap:3px;}
+  .campo-filtro.grow{flex:1;min-width:220px;}
+  .campo-filtro label{font-size:11px;font-weight:bold;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;}
+  .campo-filtro input,.campo-filtro select{padding:8px 10px;border:1px solid var(--cinza-borda);border-radius:6px;font-size:13px;background:#fff;}
+  .barra .acoes{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
+
+  .resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+  .resumo .card{background:#fff;border:1px solid var(--cinza-borda);border-left:4px solid var(--azul);border-radius:8px;padding:10px 14px;}
+  .resumo .card.amarelo{border-left-color:var(--amarelo);}
+  .resumo .card.rosa{border-left-color:var(--rosa);}
+  .resumo .lbl{font-size:11px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;}
+  .resumo .val{font-size:20px;font-weight:bold;color:var(--marinho);}
+
+  /* ---------- Tabela ---------- */
+  .tabela-wrap{background:#fff;border:1px solid var(--cinza-borda);border-radius:8px;overflow:auto;max-height:65vh;}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap;min-width:960px;}
+  thead th{position:sticky;top:0;background:var(--marinho);color:#fff;padding:9px 10px;text-align:left;font-weight:normal;z-index:2;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--cinza-borda);}
+  tbody tr{cursor:pointer;}
+  tbody tr:nth-child(even){background:var(--linha-par);}
+  tbody tr:hover{background:#EAF6FA;}
+  .trunc{max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+  .badge{font-size:11.5px;font-weight:bold;padding:2px 10px;border-radius:999px;display:inline-block;}
+  .badge.Ativo{background:var(--azul-claro);color:var(--marinho);}
+  .badge.Inativo{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-borda);}
+  .vazio{padding:40px 20px;text-align:center;color:var(--cinza-texto);}
+  .rodape-tabela{padding:10px 4px;font-size:12px;color:var(--cinza-texto);}
+
+  /* ---------- Painel lateral (formulário) ---------- */
+  .fundo{position:fixed;inset:0;background:rgba(26,58,80,.35);opacity:0;pointer-events:none;transition:opacity .15s;z-index:30;}
+  .fundo.aberto{opacity:1;pointer-events:auto;}
+  .painel{
+    position:fixed;top:0;right:0;height:100%;width:min(460px,100%);background:#fff;z-index:31;
+    transform:translateX(100%);transition:transform .18s ease, visibility .18s;display:flex;flex-direction:column;
+    visibility:hidden;
+  }
+  .painel.aberto{transform:none;visibility:visible;box-shadow:-8px 0 24px rgba(0,0,0,.15);}
+  .painel header{background:var(--marinho);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+  .painel header h2{margin:0;font-size:17px;}
+  .painel .fechar{background:none;border:0;color:#C9DCE6;cursor:pointer;padding:4px;}
+  .painel .fechar:hover{color:#fff;}
+  .painel .corpo{padding:18px 20px;overflow:auto;flex:1;}
+  .painel footer{padding:14px 20px;border-top:1px solid var(--cinza-borda);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+
+  /* ---------- Importação em massa ---------- */
+  .painel-largo{width:min(900px,100%);}
+  .imp-passos{margin:0 0 16px;padding:14px 16px 14px 34px;background:var(--cinza-bg);border-radius:12px;color:var(--cinza-texto);font-size:13px;}
+  .imp-passos li{margin:3px 0;}
+  .imp-passos b{color:var(--marinho);}
+  .dropzone{
+    display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;cursor:pointer;
+    border:2px dashed var(--cinza-borda);border-radius:14px;padding:30px 16px;background:#fff;color:var(--cinza-texto);
+    transition:background .15s,border-color .15s;margin-top:14px;
+  }
+  .dropzone:hover,.dropzone.sobre{border-color:var(--azul);background:var(--azul-claro);}
+  .dropzone svg{width:38px;height:38px;color:var(--marinho);}
+  .dropzone b{color:var(--marinho);font-size:15px;}
+  .dropzone small{font-size:12px;}
+  .imp-erro{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--rosa-claro);color:var(--erro);font-size:13px;}
+  .imp-arquivo{font-size:13px;color:var(--cinza-texto);margin-bottom:10px;}
+  .imp-arquivo b{color:var(--marinho);}
+  .chips-imp{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px;}
+  .chip-imp{padding:4px 11px;border-radius:999px;font-size:12px;font-weight:bold;white-space:nowrap;}
+  .chip-imp.novo,.chip-imp.ok{background:var(--azul-claro);color:var(--marinho);}
+  .chip-imp.atualizar{background:var(--amarelo-claro);color:#6b5200;}
+  .chip-imp.existente,.chip-imp.semAlteracao{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-borda);}
+  .chip-imp.erro{background:var(--rosa-claro);color:var(--erro);}
+  .imp-opcoes{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;}
+  .imp-opcoes label.chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;}
+  .imp-opcoes input[type=checkbox]{width:18px;height:18px;accent-color:var(--marinho);}
+  .imp-opcoes select{padding:7px 9px;border:1px solid var(--cinza-borda);border-radius:6px;font-size:13px;background:#fff;}
+  .tab-imp-wrap{border:1px solid var(--cinza-borda);border-radius:10px;overflow:auto;max-height:52vh;}
+  .tab-imp{min-width:680px;}
+  .tab-imp tbody tr{cursor:default;}
+  .tab-imp td.msg-imp{white-space:normal;min-width:220px;color:var(--cinza-texto);font-size:12px;}
+  .imp-nota{font-size:12px;color:var(--cinza-texto);margin-top:8px;}
+  .barra-progresso{height:12px;background:var(--cinza-bg);border-radius:999px;overflow:hidden;border:1px solid var(--cinza-borda);margin:14px 0 8px;}
+  .barra-progresso div{height:100%;width:0;background:var(--azul);transition:width .25s ease;}
+  .imp-centro{text-align:center;padding:20px 8px;}
+  .imp-centro h3{color:var(--marinho);margin:6px 0;}
+  .painel footer .esp{flex:1;}
+  .campo{margin-bottom:14px;}
+  .campo label{display:block;font-size:11.5px;font-weight:bold;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+  .campo label i{color:var(--erro);font-style:normal;}
+  .campo input,.campo select{width:100%;padding:9px 11px;border:1px solid var(--cinza-borda);border-radius:6px;font-size:13.5px;background:#fff;}
+  .campo input:focus,.campo select:focus{outline:2px solid var(--azul);border-color:var(--marinho);}
+  .campo input:disabled{background:var(--cinza-bg);color:var(--cinza-texto);}
+  .campo .msg{color:var(--erro);font-size:12px;margin-top:3px;}
+  .campo.invalido input,.campo.invalido select{border-color:var(--erro);}
+  .duas{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .meta{font-size:12px;color:var(--cinza-texto);margin-top:6px;}
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--marinho);color:#fff;
+    padding:11px 18px;border-radius:8px;opacity:0;transition:.2s;z-index:40;max-width:92vw;font-size:13.5px;
+  }
+  .toast.on{opacity:1;transform:translateX(-50%);}
+  .toast.erro{background:var(--erro);}
+
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  #avisoNavegadorEmbutido{
+    display:none;background:var(--amarelo);color:#5A4300;padding:10px 16px;font-size:13px;text-align:center;font-weight:bold;
+  }
+
+  /* ---------- Elementos só de celular (ocultos por padrão) ---------- */
+  .btn-menu{display:none;}
+  .backdrop-menu{display:none;}
+  .so-mobile{display:none;}
+  .fab{display:none;}
+  body.travado{overflow:hidden;}
+
+  /* Cartões de fornecedor (celular) */
+  .lista-cards{gap:10px;}
+  .card-forn{
+    background:#fff;border:1px solid var(--cinza-borda);border-left:4px solid var(--azul);border-radius:12px;
+    padding:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .card-forn.Inativo{border-left-color:var(--cinza-borda);}
+  .card-forn:active{background:#EAF6FA;}
+  .card-forn .topo{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;}
+  .card-forn .codigo{font-size:12px;font-weight:bold;color:var(--cinza-texto);letter-spacing:.3px;}
+  .card-forn .nome{font-size:16px;font-weight:bold;color:var(--marinho);line-height:1.25;}
+  .card-forn .razao{font-size:12.5px;color:var(--cinza-texto);margin-top:2px;}
+  .card-forn .infos{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-top:10px;font-size:13px;}
+  .card-forn .infos dt{color:var(--cinza-texto);font-size:11px;text-transform:uppercase;letter-spacing:.3px;align-self:center;}
+  .card-forn .infos dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .card-forn .contatos{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .card-forn .contatos a{
+    display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 12px;border-radius:999px;
+    background:var(--azul-claro);color:var(--marinho);font-size:13px;font-weight:bold;text-decoration:none;
+    max-width:100%;overflow:hidden;
+  }
+  .card-forn .contatos a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .card-forn .contatos svg{width:16px;height:16px;flex-shrink:0;}
+
+  /* Sem efeito de "levantar" em telas de toque */
+  @media (hover:none){
+    .card-mod:hover:not(:disabled){transform:none;box-shadow:none;}
+    tbody tr:hover{background:inherit;}
+  }
+
+  /* ---------- Tablet: menu só com ícones (pode expandir) ---------- */
+  @media (min-width:781px) and (max-width:1099px){
+    .sidebar:not(.expandida){width:64px;}
+    .sidebar:not(.expandida) .sidebar-logo,
+    .sidebar:not(.expandida) .nav-label,
+    .sidebar:not(.expandida) .tag,
+    .sidebar:not(.expandida) .nav-secao{display:none;}
+    .sidebar:not(.expandida) .nav-item{justify-content:center;padding:15px 4px;}
+    .sidebar:not(.expandida) .sidebar-toggle svg{transform:rotate(180deg);}
+    .col-opc{display:none;}
+    table{min-width:0;}
+    thead th,tbody td{padding:9px 8px;}
+    .trunc{max-width:170px;}
+    .grade{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+    main{padding:18px 18px 50px;}
+  }
+
+  /* ---------- Celular ---------- */
+  @media (max-width:780px){
+    /* Menu vira gaveta lateral */
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;height:100%;width:min(280px,84vw);z-index:50;
+      transform:translateX(-105%);transition:transform .22s ease;
+      padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
+    }
+    .sidebar.collapsed{width:min(280px,84vw);}
+    .sidebar.aberta{transform:none;box-shadow:6px 0 24px rgba(0,0,0,.25);}
+    .sidebar .sidebar-logo,.sidebar.collapsed .sidebar-logo{display:flex;}
+    .sidebar .nav-label,.sidebar.collapsed .nav-label,.sidebar .tag,.sidebar.collapsed .tag{display:inline;}
+    .sidebar .nav-secao,.sidebar.collapsed .nav-secao{display:block;}
+    .sidebar .nav-item,.sidebar.collapsed .nav-item{justify-content:flex-start;padding:14px 20px;min-height:48px;font-size:14.5px;}
+    .sidebar-toggle{display:none;}
+    .backdrop-menu{display:block;position:fixed;inset:0;background:rgba(26,58,80,.45);z-index:45;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .backdrop-menu.aberto{opacity:1;pointer-events:auto;}
+
+    /* Cabeçalho compacto */
+    header.top{
+      padding:10px 12px;padding-top:max(10px, env(safe-area-inset-top));
+      flex-wrap:nowrap;gap:8px;
+    }
+    .btn-menu{
+      display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border:0;border-radius:10px;
+      background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+    }
+    .btn-menu svg{width:22px;height:22px;}
+    header.top .brand{flex:1;min-width:0;}
+    header.top .brand .title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    header.top .brand .subtitulo{font-size:11px;}
+    #authArea .nome{display:none;}
+    #authArea .btn{padding:9px 12px;min-height:42px;}
+
+    main{padding:14px 12px 24px;}
+    .rodape-app{
+      justify-content:center;text-align:center;font-size:11.5px;
+      padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+    }
+    body.logado[data-rota="fornecedores"] .rodape-app{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
+    h1{font-size:20px;}
+    .sub{margin-bottom:14px;font-size:13px;}
+
+    /* Início */
+    .boas-vindas{padding:18px;border-radius:14px;margin-bottom:16px;}
+    .boas-vindas h2{font-size:19px;}
+    .boas-vindas p{font-size:13px;}
+    .boas-vindas .pontos{display:none;}
+    .grade{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .card-mod{padding:14px;min-height:0;gap:7px;}
+    .card-mod .ic{width:40px;height:40px;}
+    .card-mod h3{font-size:14.5px;}
+    .card-mod p{font-size:12px;}
+
+    /* Barra de filtros empilhada */
+    .barra{padding:12px;gap:10px;}
+    .campo-filtro.grow{min-width:100%;}
+    .campo-filtro:not(.grow){flex:1;}
+    .barra .acoes{margin-left:0;}
+    #btnNovoForn{display:none;}
+    #btnImportForn{flex:1;justify-content:center;min-height:40px;}
+    .painel footer .esp{display:none;}
+    #btnAtualizarForn{min-height:40px;}
+
+    /* Indicadores em 3 colunas compactas */
+    .resumo{grid-template-columns:repeat(3,1fr);gap:8px;}
+    .resumo .card{padding:8px 10px;}
+    .resumo .lbl{font-size:10px;}
+    .resumo .val{font-size:18px;}
+
+    /* Lista: cartões no lugar da tabela */
+    .tabela-wrap{background:transparent;border:0;max-height:none;overflow:visible;}
+    .tabela-wrap .vazio{background:#fff;border:1px solid var(--cinza-borda);border-radius:12px;}
+    .so-desktop{display:none;}
+    .so-mobile{display:grid;}
+
+    /* Inputs com 16px evitam o zoom automático do iPhone */
+    input,select{font-size:16px !important;}
+    .campo input,.campo select{min-height:46px;}
+
+    /* Formulário em tela cheia */
+    .painel{width:100%;}
+    .painel header{padding:14px 16px;padding-top:max(14px, env(safe-area-inset-top));}
+    .painel .corpo{padding:16px;}
+    .painel footer{padding:12px 16px;padding-bottom:max(12px, env(safe-area-inset-bottom));}
+    .painel footer .btn{flex:1;justify-content:center;min-height:48px;font-size:15px;}
+    .duas{grid-template-columns:1fr;gap:0;}
+
+    /* Botão flutuante "Novo" */
+    body.logado[data-rota="fornecedores"] .fab{
+      display:grid;place-items:center;position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));
+      width:58px;height:58px;border-radius:50%;border:0;background:var(--azul);color:var(--marinho-escuro);
+      box-shadow:0 6px 18px rgba(37,77,105,.35);z-index:25;cursor:pointer;
+    }
+    .fab svg{width:26px;height:26px;}
+    .toast{bottom:calc(90px + env(safe-area-inset-bottom));}
+  }
+
+  @media (max-width:360px){
+    .grade{grid-template-columns:1fr;}
+    .resumo .val{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="avisoNavegadorEmbutido">
+  ⚠️ Você abriu este link dentro do WhatsApp/Teams/Instagram. O login da Microsoft não funciona nesse navegador interno.
+  Toque no menu "⋮" (ou "Abrir no navegador") e abra este link no Chrome ou Safari.
+</div>
+
+<div class="app-shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo" id="sidebarLogo"></div>
+
+    <button class="nav-item" data-rota="inicio" title="Início">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      <span class="nav-label">Início</span>
+    </button>
+
+    <div class="nav-secao">Módulos</div>
+    <button class="nav-item" data-rota="cadastros" title="Cadastros">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17c.8-1.8 2-2.6 3.5-2.6s2.7.8 3.5 2.6M15 10h3M15 14h3"/></svg>
+      <span class="nav-label">Cadastros</span>
+    </button>
+    <button class="nav-item" disabled title="Movimentações (em breve)">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>
+      <span class="nav-label">Movimentações</span><span class="tag">em breve</span>
+    </button>
+    <button class="nav-item" disabled title="Estoque (em breve)">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+      <span class="nav-label">Estoque</span><span class="tag">em breve</span>
+    </button>
+    <button class="nav-item" disabled title="Orçamento (em breve)">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="12"/><line x1="10" y1="20" x2="10" y2="6"/><line x1="16" y1="20" x2="16" y2="14"/><line x1="20" y1="20" x2="20" y2="9"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+      <span class="nav-label">Orçamento</span><span class="tag">em breve</span>
+    </button>
+    <button class="nav-item" disabled title="Gestão Financeira (em breve)">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3-1.6M12 6v2M12 16v2"/></svg>
+      <span class="nav-label">Financeiro</span><span class="tag">em breve</span>
+    </button>
+
+    <button class="sidebar-toggle" id="btnToggleSidebar" title="Recolher menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </nav>
+
+  <div class="main-area">
+    <header class="top">
+      <button class="btn-menu" id="btnMenu" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="brand">
+        <span class="title" id="viewTitle">Central de Embalagens</span>
+        <span class="subtitulo">Supply Chain · Raiar Orgânicos</span>
+      </div>
+      <div id="authArea"></div>
+    </header>
+
+    <main>
+      <div id="statusPanel"></div>
+
+      <!-- INÍCIO -->
+      <section class="view" id="view-inicio">
+        <div class="boas-vindas">
+          <div>
+            <h2 id="saudacao">Olá!</h2>
+            <p>Cadastros, movimentações, estoque e custos de embalagem num só lugar.</p>
+          </div>
+          <div class="pontos"><span style="background:var(--azul)"></span><span style="background:var(--amarelo)"></span><span style="background:var(--rosa)"></span></div>
+        </div>
+        <div class="grade" id="gradeModulos"></div>
+      </section>
+
+      <!-- CADASTROS -->
+      <section class="view" id="view-cadastros">
+        <div class="migalha"><a data-ir="inicio">Início</a><span>›</span><span>Cadastros</span></div>
+        <h1>Cadastros</h1>
+        <p class="sub">Cadastros-base usados em movimentações, orçamento e custos.</p>
+        <div class="grade" id="gradeCadastros"></div>
+      </section>
+
+      <!-- FORNECEDORES -->
+      <section class="view" id="view-fornecedores">
+        <div class="migalha"><a data-ir="inicio">Início</a><span>›</span><a data-ir="cadastros">Cadastros</a><span>›</span><span>Fornecedores</span></div>
+        <h1>Fornecedores</h1>
+        <p class="sub">Lista <b>Fornecedores</b> do site Supply Chain no SharePoint. Toque ou clique em um fornecedor para editar.</p>
+
+        <div class="barra">
+          <div class="campo-filtro grow">
+            <label>Buscar</label>
+            <input id="buscaForn" type="text" placeholder="Código, razão social, nome, CNPJ, responsável…">
+          </div>
+          <div class="campo-filtro">
+            <label>Status</label>
+            <select id="filtroStatusForn"></select>
+          </div>
+          <div class="acoes">
+            <button class="btn btn-secondary" id="btnAtualizarForn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg> Atualizar
+            </button>
+            <button class="btn btn-secondary" id="btnImportForn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg> Importar planilha
+            </button>
+            <button class="btn btn-primary" id="btnNovoForn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> Novo fornecedor
+            </button>
+          </div>
+        </div>
+
+        <div class="resumo">
+          <div class="card"><div class="lbl">Total</div><div class="val" id="resTotalForn">0</div></div>
+          <div class="card amarelo"><div class="lbl">Ativos</div><div class="val" id="resAtivosForn">0</div></div>
+          <div class="card rosa"><div class="lbl">Inativos</div><div class="val" id="resInativosForn">0</div></div>
+        </div>
+
+        <div class="tabela-wrap" id="tabelaForn"></div>
+        <div class="rodape-tabela" id="rodapeForn"></div>
+      </section>
+    </main>
+
+    <footer class="rodape-app">
+      <span>Central de Embalagens · Raiar Orgânicos</span>
+      <span class="versao" id="versaoApp"></span>
+    </footer>
+  </div>
+</div>
+
+<!-- Fundo da gaveta de menu (celular) -->
+<div class="backdrop-menu" id="backdropMenu"></div>
+
+<!-- Botão flutuante "Novo fornecedor" (celular) -->
+<button class="fab" id="fabNovo" aria-label="Novo fornecedor">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- Painel de cadastro/edição -->
+<div class="fundo" id="fundo"></div>
+<aside class="painel" id="painel" aria-hidden="true">
+  <header>
+    <h2 id="painelTitulo">Novo fornecedor</h2>
+    <button class="fechar" id="btnFecharPainel" aria-label="Fechar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+  <div class="corpo">
+    <form id="formForn" novalidate autocomplete="off">
+      <div class="campo" data-campo="Title">
+        <label>Código <i>*</i></label>
+        <input name="Title" maxlength="30" placeholder="Ex.: FORN0001">
+        <div class="msg"></div>
+      </div>
+      <div class="campo" data-campo="cnpj">
+        <label>CNPJ <i>*</i></label>
+        <input name="cnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00">
+        <div class="msg"></div>
+      </div>
+      <div class="campo" data-campo="razao_social">
+        <label>Razão social <i>*</i></label>
+        <input name="razao_social" maxlength="255">
+        <div class="msg"></div>
+      </div>
+      <div class="campo" data-campo="nome_ajustado_fornecedor">
+        <label>Nome ajustado <i>*</i></label>
+        <input name="nome_ajustado_fornecedor" maxlength="255" placeholder="Nome curto usado nos relatórios">
+        <div class="msg"></div>
+      </div>
+      <div class="campo" data-campo="nome_responsavel_fornecedor">
+        <label>Responsável <i>*</i></label>
+        <input name="nome_responsavel_fornecedor" maxlength="255">
+        <div class="msg"></div>
+      </div>
+      <div class="duas">
+        <div class="campo" data-campo="telefone_fornecedor">
+          <label>Telefone <i>*</i></label>
+          <input name="telefone_fornecedor" inputmode="tel" maxlength="15" placeholder="(00) 00000-0000">
+          <div class="msg"></div>
+        </div>
+        <div class="campo" data-campo="status">
+          <label>Status <i>*</i></label>
+          <select name="status"></select>
+          <div class="msg"></div>
+        </div>
+      </div>
+      <div class="campo" data-campo="email_fornecedor">
+        <label>E-mail <i>*</i></label>
+        <input name="email_fornecedor" type="email" maxlength="255">
+        <div class="msg"></div>
+      </div>
+      <div class="meta" id="metaForn"></div>
+    </form>
+  </div>
+  <footer>
+    <button class="btn btn-secondary" id="btnCancelarForn" type="button">Cancelar</button>
+    <button class="btn btn-primary" id="btnSalvarForn" type="button">Salvar</button>
+  </footer>
+</aside>
+
+<!-- Painel de importação em massa -->
+<aside class="painel painel-largo" id="painelImport" aria-hidden="true">
+  <header>
+    <h2>Importar fornecedores</h2>
+    <button class="fechar" id="btnFecharImport" aria-label="Fechar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+  <div class="corpo" id="corpoImport"></div>
+  <footer id="rodapeImport"></footer>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO — Entra ID / Microsoft Graph / SharePoint
+   ========================================================= */
+const CONFIG = {
+  clientId: "538ecaea-c22a-4502-8f24-138199312916",
+  tenantId: "6c305056-e26e-49fd-82f1-e9eb7cae3c4b",
+  redirectUri: "https://aia-raiar.github.io/raiar/central_embalagens/",
+  // Leitura + escrita nas listas. Enquanto a TI não liberar a escrita,
+  // troque para ["User.Read", "Sites.Read.All"] para testar só a leitura.
+  graphScopes: ["User.Read", "Sites.ReadWrite.All"],
+  sitePath: "organicosraiar.sharepoint.com:/sites/SupplyChain-RAIARORGNICOS",
+  listas: {
+    fornecedores: "Fornecedores"
+  },
+  // Versão exibida no rodapé (data e hora sempre no fuso de Brasília)
+  versao: "V1 - 01/10/2026 - 12:43",
+  // Logo negativo (branco, para fundo marinho) embutido no próprio arquivo
+  logoUrl: "data:image/png;base64,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"
+};
+
+/* =========================================================
+   Estado
+   ========================================================= */
+const estado = {
+  conta: null,
+  siteId: null,
+  rota: "inicio",
+  forn: { itens: [], carregado: false, carregando: false, busca: "", filtroStatus: "Ativo", statusOpcoes: ["Ativo", "Inativo"], editando: null }
+};
+const CAMPOS_FORN = ["Title","cnpj","razao_social","nome_ajustado_fornecedor","nome_responsavel_fornecedor","telefone_fornecedor","email_fornecedor","status"];
+
+const ROTAS = {
+  inicio: { titulo: "Central de Embalagens", nav: "inicio" },
+  cadastros: { titulo: "Cadastros", nav: "cadastros" },
+  fornecedores: { titulo: "Cadastros · Fornecedores", nav: "cadastros" }
+};
+
+const IC = {
+  cadastros:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17c.8-1.8 2-2.6 3.5-2.6s2.7.8 3.5 2.6M15 10h3M15 14h3"/></svg>',
+  mov:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>',
+  estoque:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
+  orc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="12"/><line x1="10" y1="20" x2="10" y2="6"/><line x1="16" y1="20" x2="16" y2="14"/><line x1="20" y1="20" x2="20" y2="9"/></svg>',
+  fin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3-1.6M12 6v2M12 16v2"/></svg>',
+  forn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l6 3V9l6 3V5h6v16z"/></svg>',
+  item:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="13" rx="1.5"/><path d="M4 7l2-3h12l2 3M10 11h4"/></svg>',
+  sku:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 5v14M7 5v14M10 5v14M14 5v14M18 5v14M20 5v14"/></svg>',
+  ficha:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+  preco:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>'
+};
+
+const MODULOS = [
+  { titulo:"Cadastros", desc:"Fornecedores, itens de embalagem, SKUs, ficha técnica e preços.", ic:"cadastros", cor:"azul", rota:"cadastros" },
+  { titulo:"Movimentações", desc:"Entradas, saídas, ajustes e perdas de embalagens.", ic:"mov", cor:"amarelo" },
+  { titulo:"Estoque", desc:"Saldos por item e fechamento mensal.", ic:"estoque", cor:"rosa" },
+  { titulo:"Orçamento", desc:"Orçado x realizado por SKU e por item.", ic:"orc", cor:"azul" },
+  { titulo:"Gestão Financeira", desc:"Custos por período, fornecedor e item.", ic:"fin", cor:"amarelo" }
+];
+const CADASTROS = [
+  { titulo:"Fornecedores", desc:"Fornecedores de embalagem.", ic:"forn", cor:"azul", rota:"fornecedores" },
+  { titulo:"Itens de Embalagem", desc:"Caixas, bandejas, filmes, etiquetas e demais itens.", ic:"item", cor:"amarelo" },
+  { titulo:"SKUs", desc:"Produtos finais que consomem embalagem.", ic:"sku", cor:"rosa" },
+  { titulo:"Ficha Técnica", desc:"Consumo de embalagem por SKU.", ic:"ficha", cor:"azul" },
+  { titulo:"Preços", desc:"Histórico de preço por item e fornecedor.", ic:"preco", cor:"amarelo" }
+];
+
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const soDigitos = v => String(v || "").replace(/\D/g, "");
+const semAcento = v => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const fmtDataHora = iso => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("pt-BR", { timeZone:"America/Sao_Paulo" }) + " " +
+    d.toLocaleTimeString("pt-BR", { timeZone:"America/Sao_Paulo", hour:"2-digit", minute:"2-digit" });
+};
+
+function toast(msg, erro = false){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "toast on" + (erro ? " erro" : "");
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.className = "toast", erro ? 7000 : 3000);
+}
+function mostrarStatus(html, classe){
+  const el = $("#statusPanel");
+  if (!html){ el.className = ""; el.innerHTML = ""; return; }
+  el.innerHTML = html;
+  el.className = "visivel " + (classe || "");
+}
+
+function mascaraCnpj(v){
+  return soDigitos(v).slice(0, 14)
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+function mascaraTelefone(v){
+  const d = soDigitos(v).slice(0, 11);
+  if (d.length <= 2) return d.length ? "(" + d : "";
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+}
+function cnpjValido(v){
+  const c = soDigitos(v);
+  if (c.length !== 14 || /^(\d)\1+$/.test(c)) return false;
+  const calc = base => {
+    let soma = 0, peso = base.length - 7;
+    for (let i = 0; i < base.length; i++){ soma += +base[i] * peso--; if (peso < 2) peso = 9; }
+    const r = soma % 11; return r < 2 ? 0 : 11 - r;
+  };
+  const d1 = calc(c.slice(0, 12));
+  const d2 = calc(c.slice(0, 12) + d1);
+  return c.endsWith(`${d1}${d2}`);
+}
+
+/* =========================================================
+   Logo e navegador embutido
+   ========================================================= */
+function montarLogo(){
+  const box = $("#sidebarLogo");
+  const img = new Image();
+  img.alt = "Raiar Orgânicos";
+  img.onload = () => { box.innerHTML = ""; box.appendChild(img); };
+  img.onerror = () => { box.innerHTML = '<div class="logo-texto">Raiar Orgânicos<small>Central de Embalagens</small></div>'; };
+  img.src = CONFIG.logoUrl;
+}
+function verificarNavegadorEmbutido(){
+  const ua = navigator.userAgent || "";
+  if (/FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|WhatsApp|\bwv\)|Teams\//i.test(ua))
+    $("#avisoNavegadorEmbutido").style.display = "block";
+}
+
+/* =========================================================
+   MSAL — autenticação (mesmo padrão da Central de Pedidos)
+   ========================================================= */
+let msalInstance = null;
+
+async function inicializarMsal(){
+  msalInstance = new msal.PublicClientApplication({
+    auth: { clientId: CONFIG.clientId, authority: "https://login.microsoftonline.com/" + CONFIG.tenantId, redirectUri: CONFIG.redirectUri },
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: true }
+  });
+  await msalInstance.initialize();
+  try{
+    const resp = await msalInstance.handleRedirectPromise();
+    const conta = (resp && resp.account) || msalInstance.getAllAccounts()[0];
+    if (conta){ estado.conta = conta; msalInstance.setActiveAccount(conta); }
+  }catch(e){
+    mostrarStatus("Falha ao concluir login: " + esc(e.errorMessage || e.message), "erro");
+  }
+}
+
+async function fazerLogin(){
+  if (!msalInstance){ mostrarStatus("A biblioteca de login (MSAL) não carregou. Verifique a conexão e recarregue a página.", "erro"); return; }
+  try{ await msalInstance.loginRedirect({ scopes: CONFIG.graphScopes }); }
+  catch(e){ mostrarStatus("Falha ao iniciar login: " + esc(e.errorMessage || e.message), "erro"); }
+}
+function fazerLogout(){ if (msalInstance) msalInstance.logoutRedirect(); }
+
+/* Sem redirecionamento automático em falha de renovação (evita loop no Safari/iOS). */
+async function obterToken(){
+  try{
+    const r = await msalInstance.acquireTokenSilent({ scopes: CONFIG.graphScopes, account: estado.conta });
+    return r.accessToken;
+  }catch(e){
+    console.error("Falha ao renovar token:", e);
+    throw new Error("SESSAO_EXPIRADA");
+  }
+}
+
+function atualizarAuthArea(){
+  const area = $("#authArea");
+  document.body.classList.toggle("logado", !!estado.conta);
+  if (estado.conta){
+    area.innerHTML = `<span class="nome">${esc(estado.conta.name || estado.conta.username)}</span><button class="btn btn-secondary" id="btnSair">Sair</button>`;
+    $("#btnSair").onclick = fazerLogout;
+    const primeiro = String(estado.conta.name || "").trim().split(/\s+/)[0];
+    $("#saudacao").textContent = primeiro ? `Olá, ${primeiro}!` : "Olá!";
+  }else{
+    area.innerHTML = `<button class="btn btn-primary" id="btnEntrar">Entrar com Microsoft</button>`;
+    $("#btnEntrar").onclick = fazerLogin;
+    $("#saudacao").textContent = "Olá!";
+  }
+}
+
+/* =========================================================
+   Microsoft Graph
+   ========================================================= */
+async function graph(metodo, caminho, corpo){
+  const token = await obterToken();
+  const url = caminho.startsWith("https://") ? caminho : "https://graph.microsoft.com/v1.0" + caminho;
+  let resp;
+  try{
+    resp = await fetch(url, {
+      method: metodo,
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/json" },
+      body: corpo ? JSON.stringify(corpo) : undefined
+    });
+  }catch(e){
+    throw new Error("Falha de rede ao acessar o SharePoint.");
+  }
+  if (resp.status === 204) return null;
+  const dados = await resp.json().catch(() => ({}));
+  if (!resp.ok){
+    const err = new Error((dados.error && dados.error.message) || ("Erro " + resp.status));
+    err.status = resp.status;
+    throw err;
+  }
+  return dados;
+}
+
+async function obterSiteId(){
+  if (!estado.siteId){
+    const s = await graph("GET", `/sites/${CONFIG.sitePath}?$select=id`);
+    estado.siteId = s.id;
+  }
+  return estado.siteId;
+}
+
+function caminhoLista(nome){ return `/sites/${estado.siteId}/lists/${encodeURIComponent(nome)}`; }
+
+/* ---------------------------------------------------------
+   Mapeamento de colunas
+   O portal usa nomes "lógicos" (ex.: nome_responsavel_fornecedor),
+   mas a coluna no SharePoint pode ter outro nome interno (quando foi
+   criada com um nome e renomeada depois). Aqui lemos as colunas reais
+   da lista e casamos cada campo pelo nome interno ou pelo nome de exibição.
+   --------------------------------------------------------- */
+const normalizarNome = v => semAcento(v).replace(/[^a-z0-9]/g, "");
+
+async function mapearColunas(nomeLista, camposLogicos){
+  await obterSiteId();
+  const r = await graph("GET", `${caminhoLista(nomeLista)}/columns?$select=name,displayName,choice,readOnly,hidden`);
+  const cols = r.value.filter(c => !c.hidden);
+  const mapa = { Title: "Title" };
+  const faltando = [];
+  camposLogicos.filter(k => k !== "Title").forEach(k => {
+    const alvo = normalizarNome(k);
+    const col =
+      cols.find(c => c.name === k) ||
+      cols.find(c => c.displayName === k) ||
+      cols.find(c => normalizarNome(c.name) === alvo) ||
+      cols.find(c => normalizarNome(c.displayName) === alvo);
+    if (col) mapa[k] = col.name; else faltando.push(k);
+  });
+  console.info(`[${nomeLista}] mapeamento de colunas (lógico → interno):`, mapa);
+  return { mapa, faltando, cols };
+}
+
+/* Converte objeto lógico → nomes internos, e vice-versa */
+const paraInterno = (mapa, obj) => Object.fromEntries(Object.entries(obj).filter(([k]) => mapa[k]).map(([k, v]) => [mapa[k], v]));
+const paraLogico = (mapa, fields) => Object.fromEntries(Object.entries(mapa).map(([k, interno]) => [k, fields[interno]]));
+
+const ApiForn = {
+  mapa: null,
+  async preparar(){
+    const { mapa, faltando, cols } = await mapearColunas(CONFIG.listas.fornecedores, CAMPOS_FORN);
+    this.mapa = mapa;
+    const colStatus = cols.find(c => c.name === mapa.status);
+    return {
+      faltando,
+      statusOpcoes: (colStatus && colStatus.choice && colStatus.choice.choices) || null,
+      colunasExistentes: cols.filter(c => !c.readOnly).map(c => `${c.displayName} (${c.name})`)
+    };
+  },
+  async listar(){
+    await obterSiteId();
+    const internos = Object.values(this.mapa);
+    let url = `${caminhoLista(CONFIG.listas.fornecedores)}/items?expand=fields(select=${internos.join(",")})&$top=500`;
+    const itens = [];
+    while (url){
+      const r = await graph("GET", url);
+      itens.push(...r.value);
+      url = r["@odata.nextLink"] || null;
+    }
+    return itens.map(i => ({
+      id: i.id, ...paraLogico(this.mapa, i.fields || {}),
+      modificadoEm: i.lastModifiedDateTime,
+      modificadoPor: i.lastModifiedBy && i.lastModifiedBy.user && i.lastModifiedBy.user.displayName
+    }));
+  },
+  async criar(campos){
+    await obterSiteId();
+    return graph("POST", `${caminhoLista(CONFIG.listas.fornecedores)}/items`, { fields: paraInterno(this.mapa, campos) });
+  },
+  async atualizar(id, campos){
+    await obterSiteId();
+    return graph("PATCH", `${caminhoLista(CONFIG.listas.fornecedores)}/items/${id}/fields`, paraInterno(this.mapa, campos));
+  }
+};
+
+function tratarErroGeral(e, contexto){
+  console.error(e);
+  if (e.message === "SESSAO_EXPIRADA"){
+    mostrarStatus('Sua sessão expirou ou não pôde ser renovada automaticamente. <button class="btn btn-primary" id="btnEntrarNovamente" style="margin-left:8px;">Entrar novamente</button>', "erro");
+    $("#btnEntrarNovamente").onclick = fazerLogin;
+    return;
+  }
+  let msg = e.message;
+  if (e.status === 404) msg = `Site ou lista não encontrados. Confira o caminho do site e o nome da lista "${CONFIG.listas.fornecedores}".`;
+  else if (e.status === 403) msg = "Acesso negado. Verifique se sua conta tem acesso ao site Supply Chain.";
+  mostrarStatus(`${contexto}: ${esc(msg)}`, "erro");
+}
+
+/* =========================================================
+   Navegação
+   ========================================================= */
+function irPara(rota){
+  if (!ROTAS[rota]) rota = "inicio";
+  if (location.hash !== "#/" + rota) { location.hash = "#/" + rota; return; }
+  renderRota();
+}
+function renderRota(){
+  let rota = (location.hash.replace(/^#\/?/, "") || "inicio").split("/")[0];
+  if (!ROTAS[rota]) rota = "inicio";
+  estado.rota = rota;
+  document.body.dataset.rota = rota;
+  fecharPainel();
+  fecharImport(true);
+  fecharMenu();
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + rota));
+  document.querySelectorAll(".nav-item[data-rota]").forEach(b => b.classList.toggle("active", b.dataset.rota === ROTAS[rota].nav));
+  $("#viewTitle").textContent = ROTAS[rota].titulo;
+  window.scrollTo(0, 0);
+  if (rota === "fornecedores") entrarFornecedores();
+}
+
+function cardsHtml(lista){
+  return lista.map(m => `
+    <button class="card-mod" ${m.rota ? `data-ir="${m.rota}"` : "disabled"}>
+      <div class="ic ${m.cor}">${IC[m.ic]}</div>
+      <h3>${esc(m.titulo)}</h3>
+      <p>${esc(m.desc)}</p>
+      ${m.rota ? "" : '<span class="selo">Em breve</span>'}
+    </button>`).join("");
+}
+
+/* =========================================================
+   TELA: Fornecedores
+   ========================================================= */
+function entrarFornecedores(){
+  if (!estado.conta){
+    $("#tabelaForn").innerHTML = `<div class="vazio">Entre com sua conta Microsoft (Raiar) para carregar os fornecedores.<br><br><button class="btn btn-primary" id="btnEntrarForn">Entrar com Microsoft</button></div>`;
+    $("#btnEntrarForn").onclick = fazerLogin;
+    $("#btnNovoForn").disabled = true;
+    return;
+  }
+  $("#btnNovoForn").disabled = false;
+  if (!estado.forn.carregado) carregarFornecedores();
+  else renderFornecedores();
+}
+
+async function carregarFornecedores(){
+  const f = estado.forn;
+  if (f.carregando) return;
+  f.carregando = true;
+  mostrarStatus(null);
+  $("#tabelaForn").innerHTML = `<div class="vazio"><span class="spin"></span> Buscando fornecedores no SharePoint…</div>`;
+  $("#btnAtualizarForn").disabled = true;
+  try{
+    const prep = await ApiForn.preparar();
+    f.faltando = prep.faltando;
+    if (prep.faltando.length){
+      const rotulos = { cnpj:"CNPJ", razao_social:"Razão social", nome_ajustado_fornecedor:"Nome ajustado", nome_responsavel_fornecedor:"Responsável",
+                        telefone_fornecedor:"Telefone", email_fornecedor:"E-mail", status:"Status" };
+      mostrarStatus(
+        `<b>Algumas colunas não foram encontradas na lista ${esc(CONFIG.listas.fornecedores)}:</b> ` +
+        prep.faltando.map(k => `${esc(rotulos[k] || k)} (<code>${esc(k)}</code>)`).join(", ") +
+        `.<br>O cadastro fica bloqueado até a coluna existir. Colunas encontradas: ${esc(prep.colunasExistentes.join(" · "))}`,
+        "erro");
+    }
+    if (prep.statusOpcoes && prep.statusOpcoes.length) f.statusOpcoes = prep.statusOpcoes;
+    const itens = await ApiForn.listar();
+    f.itens = itens.sort((a, b) => String(a.Title).localeCompare(String(b.Title), "pt-BR", { numeric:true }));
+    f.carregado = true;
+    montarFiltroStatus();
+    renderFornecedores();
+  }catch(e){
+    $("#tabelaForn").innerHTML = `<div class="vazio">Não foi possível carregar os fornecedores.</div>`;
+    tratarErroGeral(e, "Erro ao carregar fornecedores");
+  }finally{
+    f.carregando = false;
+    $("#btnAtualizarForn").disabled = false;
+  }
+}
+
+function montarFiltroStatus(){
+  const sel = $("#filtroStatusForn");
+  const opcoes = ["Todos", ...estado.forn.statusOpcoes];
+  if (!opcoes.includes(estado.forn.filtroStatus)) estado.forn.filtroStatus = "Todos";
+  sel.innerHTML = opcoes.map(o => `<option ${o === estado.forn.filtroStatus ? "selected" : ""}>${esc(o)}</option>`).join("");
+}
+
+function fornecedoresFiltrados(){
+  const f = estado.forn;
+  const termo = semAcento(f.busca.trim());
+  return f.itens.filter(x => {
+    if (f.filtroStatus !== "Todos" && x.status !== f.filtroStatus) return false;
+    if (!termo) return true;
+    return semAcento([x.Title, x.razao_social, x.nome_ajustado_fornecedor, x.cnpj, soDigitos(x.cnpj), x.nome_responsavel_fornecedor, x.email_fornecedor].join(" ")).includes(termo);
+  });
+}
+
+function renderFornecedores(){
+  const f = estado.forn;
+  const lista = fornecedoresFiltrados();
+  const ativos = f.itens.filter(x => x.status === "Ativo").length;
+  $("#resTotalForn").textContent = f.itens.length;
+  $("#resAtivosForn").textContent = ativos;
+  $("#resInativosForn").textContent = f.itens.length - ativos;
+
+  if (!lista.length){
+    $("#tabelaForn").innerHTML = `<div class="vazio">${f.itens.length ? "Nenhum fornecedor encontrado com esses filtros." : "Nenhum fornecedor cadastrado ainda. Clique em <b>Novo fornecedor</b>."}</div>`;
+    $("#rodapeForn").textContent = "";
+    return;
+  }
+  $("#tabelaForn").innerHTML = `
+    <table class="so-desktop">
+      <thead><tr>
+        <th>Código</th><th>Nome ajustado</th><th>Razão social</th><th>CNPJ</th><th class="col-opc">Responsável</th>
+        <th>Telefone</th><th class="col-opc">E-mail</th><th>Status</th><th class="col-opc">Atualizado em</th>
+      </tr></thead>
+      <tbody>${lista.map(x => `
+        <tr data-id="${esc(x.id)}">
+          <td><b>${esc(x.Title)}</b></td>
+          <td class="trunc">${esc(x.nome_ajustado_fornecedor)}</td>
+          <td class="trunc" title="${esc(x.razao_social)}">${esc(x.razao_social)}</td>
+          <td>${esc(x.cnpj)}</td>
+          <td class="trunc col-opc">${esc(x.nome_responsavel_fornecedor)}</td>
+          <td>${esc(x.telefone_fornecedor)}</td>
+          <td class="trunc col-opc">${esc(x.email_fornecedor)}</td>
+          <td><span class="badge ${esc(x.status)}">${esc(x.status)}</span></td>
+          <td class="col-opc" title="${esc(x.modificadoPor || "")}">${esc(fmtDataHora(x.modificadoEm))}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+    <div class="lista-cards so-mobile">${lista.map(cardFornHtml).join("")}</div>`;
+  $("#rodapeForn").textContent = `Exibindo ${lista.length} de ${f.itens.length} fornecedor(es).`;
+  document.querySelectorAll("#tabelaForn [data-id]").forEach(el =>
+    el.addEventListener("click", e => {
+      if (e.target.closest("a")) return; // tocar em telefone/e-mail não abre a edição
+      abrirPainel(f.itens.find(x => x.id === el.dataset.id));
+    }));
+}
+
+function cardFornHtml(x){
+  const tel = soDigitos(x.telefone_fornecedor);
+  return `
+    <div class="card-forn ${esc(x.status)}" data-id="${esc(x.id)}">
+      <div class="topo"><span class="codigo">${esc(x.Title)}</span><span class="badge ${esc(x.status)}">${esc(x.status)}</span></div>
+      <div class="nome">${esc(x.nome_ajustado_fornecedor || x.razao_social)}</div>
+      <div class="razao">${esc(x.razao_social)}</div>
+      <dl class="infos">
+        <dt>CNPJ</dt><dd>${esc(x.cnpj)}</dd>
+        <dt>Contato</dt><dd>${esc(x.nome_responsavel_fornecedor)}</dd>
+      </dl>
+      <div class="contatos">
+        ${tel ? `<a href="tel:+55${tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg><span>${esc(x.telefone_fornecedor)}</span></a>` : ""}
+        ${x.email_fornecedor ? `<a href="mailto:${esc(x.email_fornecedor)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg><span>${esc(x.email_fornecedor)}</span></a>` : ""}
+      </div>
+    </div>`;
+}
+
+/* ---------- Painel / formulário ---------- */
+const form = $("#formForn");
+const campo = nome => form.elements[nome];
+
+function abrirPainel(forn){
+  estado.forn.editando = forn || null;
+  $("#painelTitulo").textContent = forn ? `Editar ${forn.Title}` : "Novo fornecedor";
+  campo("status").innerHTML = estado.forn.statusOpcoes.map(o => `<option>${esc(o)}</option>`).join("");
+  CAMPOS_FORN.forEach(c => campo(c).value = forn ? (forn[c] || "") : "");
+  if (!forn) campo("status").value = estado.forn.statusOpcoes.includes("Ativo") ? "Ativo" : estado.forn.statusOpcoes[0];
+  campo("Title").disabled = !!forn;
+  $("#metaForn").textContent = forn ? `Última alteração: ${fmtDataHora(forn.modificadoEm)}${forn.modificadoPor ? " por " + forn.modificadoPor : ""}` : "";
+  limparErros();
+  $("#fundo").classList.add("aberto");
+  $("#painel").classList.add("aberto");
+  $("#painel").setAttribute("aria-hidden", "false");
+  document.body.classList.add("travado");
+  if (!ehCelular()) setTimeout(() => campo(forn ? "razao_social" : "Title").focus(), 150);
+}
+function fecharPainel(){
+  $("#painel").classList.remove("aberto");
+  $("#painel").setAttribute("aria-hidden", "true");
+  atualizarTrava();
+  estado.forn.editando = null;
+}
+function limparErros(){
+  form.querySelectorAll(".campo").forEach(c => { c.classList.remove("invalido"); c.querySelector(".msg").textContent = ""; });
+}
+function erroCampo(nome, msg){
+  const c = form.querySelector(`[data-campo="${nome}"]`);
+  c.classList.add("invalido");
+  c.querySelector(".msg").textContent = msg;
+}
+
+function validarForn(){
+  limparErros();
+  const f = estado.forn;
+  const v = {};
+  CAMPOS_FORN.forEach(c => v[c] = String(campo(c).value || "").trim());
+  v.Title = v.Title.toUpperCase();
+  let ok = true;
+  const falha = (c, m) => { erroCampo(c, m); ok = false; };
+
+  CAMPOS_FORN.forEach(c => { if (!v[c]) falha(c, "Campo obrigatório."); });
+  if (v.Title && !f.editando && f.itens.some(x => String(x.Title).toUpperCase() === v.Title))
+    falha("Title", "Já existe um fornecedor com este código.");
+  if (v.cnpj){
+    if (!cnpjValido(v.cnpj)) falha("cnpj", "CNPJ inválido.");
+    else {
+      const dup = f.itens.find(x => soDigitos(x.cnpj) === soDigitos(v.cnpj) && (!f.editando || x.id !== f.editando.id));
+      if (dup) falha("cnpj", `CNPJ já cadastrado no fornecedor ${dup.Title}.`);
+    }
+  }
+  if (v.telefone_fornecedor && soDigitos(v.telefone_fornecedor).length < 10) falha("telefone_fornecedor", "Informe DDD + número.");
+  if (v.email_fornecedor && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email_fornecedor)) falha("email_fornecedor", "E-mail inválido.");
+  return ok ? v : null;
+}
+
+async function salvarForn(){
+  const f = estado.forn;
+  if (f.faltando && f.faltando.length){ toast("Há colunas faltando na lista do SharePoint (veja o aviso no topo da página).", true); return; }
+  const v = validarForn();
+  if (!v){ toast("Corrija os campos destacados.", true); return; }
+  const btn = $("#btnSalvarForn");
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Salvando…';
+  try{
+    if (f.editando){
+      const alterados = {};
+      CAMPOS_FORN.filter(c => c !== "Title").forEach(c => { if ((f.editando[c] || "") !== v[c]) alterados[c] = v[c]; });
+      if (!Object.keys(alterados).length){ toast("Nenhuma alteração para salvar."); fecharPainel(); return; }
+      await ApiForn.atualizar(f.editando.id, alterados);
+      toast(`Fornecedor ${v.Title} atualizado.`);
+    }else{
+      await ApiForn.criar(v);
+      toast(`Fornecedor ${v.Title} cadastrado.`);
+    }
+    fecharPainel();
+    f.carregado = false;
+    await carregarFornecedores();
+  }catch(e){
+    console.error(e);
+    let msg;
+    if (e.message === "SESSAO_EXPIRADA") msg = "Sessão expirada. Clique em Sair e entre novamente.";
+    else if (e.status === 403) msg = "Sem permissão de escrita: a Sites.ReadWrite.All ainda não foi liberada para o app, ou sua conta não pode editar esta lista.";
+    else if (e.status === 409 || /unique|exclusiv|duplicad/i.test(e.message)){ msg = "Já existe um registro com este código."; erroCampo("Title", msg); }
+    else if (e.status === 400) msg = "O SharePoint recusou os dados: " + e.message + " (confira os nomes internos das colunas).";
+    else msg = "Erro ao salvar: " + e.message;
+    toast(msg, true);
+  }finally{
+    btn.disabled = false; btn.textContent = "Salvar";
+  }
+}
+
+/* =========================================================
+   Importação em massa de fornecedores (planilha .xlsx / .xls / .csv)
+   ========================================================= */
+const ROTULOS_FORN = {
+  Title:"Código", cnpj:"CNPJ", razao_social:"Razão social", nome_ajustado_fornecedor:"Nome ajustado",
+  nome_responsavel_fornecedor:"Responsável", telefone_fornecedor:"Telefone", email_fornecedor:"E-mail", status:"Status"
+};
+/* Cabeçalhos aceitos na planilha (comparados sem acento, espaço ou pontuação) */
+const ALIAS_FORN = {
+  Title:["codigo","cod","codigosap","codigofornecedor","codfornecedor","title","titulo"],
+  cnpj:["cnpj","cnpjfornecedor"],
+  razao_social:["razaosocial","razao"],
+  nome_ajustado_fornecedor:["nomeajustado","nomeajustadofornecedor","nomefantasia","fantasia"],
+  nome_responsavel_fornecedor:["responsavel","nomeresponsavel","nomeresponsavelfornecedor","contato"],
+  telefone_fornecedor:["telefone","telefonefornecedor","fone","celular"],
+  email_fornecedor:["email","emailfornecedor"],
+  status:["status","situacao"]
+};
+const SITUACAO_IMP = {
+  novo:"Novo", atualizar:"Atualizar", existente:"Já cadastrado", semAlteracao:"Sem alterações", erro:"Erro"
+};
+const imp = { arquivo:"", linhas:[], atualizarExistentes:false, filtro:"todas", importando:false };
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+function carregarXLSX(){
+  return new Promise((ok, falha) => {
+    if (window.XLSX) return ok();
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    s.onload = () => ok();
+    s.onerror = () => falha(new Error("Não foi possível carregar o leitor de planilhas. Verifique a conexão e tente de novo."));
+    document.head.appendChild(s);
+  });
+}
+
+function abrirImport(){
+  const f = estado.forn;
+  if (!estado.conta){ toast("Entre com sua conta Microsoft para importar.", true); return; }
+  if (!f.carregado){ toast("Aguarde a lista de fornecedores carregar.", true); return; }
+  if (f.faltando && f.faltando.length){ toast("Há colunas faltando na lista do SharePoint (veja o aviso no topo da página).", true); return; }
+  imp.linhas = []; imp.arquivo = ""; imp.filtro = "todas"; imp.atualizarExistentes = false;
+  renderImportInicio();
+  $("#fundo").classList.add("aberto");
+  $("#painelImport").classList.add("aberto");
+  $("#painelImport").setAttribute("aria-hidden", "false");
+  atualizarTrava();
+  carregarXLSX().catch(() => {}); // já adianta o download da biblioteca
+}
+function fecharImport(forcar){
+  if (imp.importando && !forcar){ toast("Aguarde a importação terminar.", true); return; }
+  $("#painelImport").classList.remove("aberto");
+  $("#painelImport").setAttribute("aria-hidden", "true");
+  atualizarTrava();
+}
+
+/* ---------- Passo 1: escolher arquivo ---------- */
+function renderImportInicio(msgErro){
+  $("#corpoImport").innerHTML = `
+    <ol class="imp-passos">
+      <li><b>Baixe o modelo</b> ou use sua planilha. Colunas: ${Object.values(ROTULOS_FORN).join(", ")}.</li>
+      <li>A <b>primeira aba</b> é lida, com os cabeçalhos na primeira linha.</li>
+      <li>Confira a <b>prévia</b>: nada é gravado antes de você confirmar.</li>
+    </ol>
+    <button class="btn btn-secondary" id="btnModeloImp" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg> Baixar modelo (.xlsx)
+    </button>
+    <label class="dropzone" id="dropImp">
+      <input type="file" id="arqImp" accept=".xlsx,.xls,.csv" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg>
+      <b>Toque para escolher a planilha</b>
+      <span>ou arraste o arquivo para cá</span>
+      <small>.xlsx, .xls ou .csv</small>
+    </label>
+    ${msgErro ? `<div class="imp-erro">${msgErro}</div>` : ""}`;
+  $("#rodapeImport").innerHTML = `<button class="btn btn-secondary" id="btnCancelarImp" type="button">Cancelar</button>`;
+  $("#btnCancelarImp").onclick = () => fecharImport();
+  $("#btnModeloImp").onclick = baixarModeloImp;
+  const drop = $("#dropImp");
+  $("#arqImp").onchange = e => { if (e.target.files[0]) lerArquivoImp(e.target.files[0]); };
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("sobre"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("sobre"); }));
+  drop.addEventListener("drop", e => { const arq = e.dataTransfer.files[0]; if (arq) lerArquivoImp(arq); });
+}
+
+async function baixarModeloImp(){
+  try{
+    await carregarXLSX();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([Object.values(ROTULOS_FORN)]);
+    ws["!cols"] = [12,20,40,24,24,16,30,10].map(w => ({ wch:w }));
+    XLSX.utils.book_append_sheet(wb, ws, "Fornecedores");
+    const instr = XLSX.utils.aoa_to_sheet([
+      ["Coluna","Obrigatória","Observação"],
+      ["Código","Sim","Código único do fornecedor (ex.: código do SAP). Convertido para maiúsculas."],
+      ["CNPJ","Sim","Com ou sem pontuação. CNPJ inválido ou repetido é recusado."],
+      ["Razão social","Sim",""],
+      ["Nome ajustado","Sim","Nome curto usado nos relatórios."],
+      ["Responsável","Sim","Contato no fornecedor."],
+      ["Telefone","Sim","Com DDD, com ou sem pontuação."],
+      ["E-mail","Sim",""],
+      ["Status","Não","Opções: " + estado.forn.statusOpcoes.join(" / ") + ". Em branco = Ativo."]
+    ]);
+    instr["!cols"] = [{wch:16},{wch:12},{wch:70}];
+    XLSX.utils.book_append_sheet(wb, instr, "Instruções");
+    XLSX.writeFile(wb, "modelo_fornecedores.xlsx");
+  }catch(e){ toast(e.message, true); }
+}
+
+/* ---------- Leitura e validação ---------- */
+function celulaTexto(v){
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number") return Number.isInteger(v) ? String(v) : String(v);
+  if (v instanceof Date) return v.toLocaleDateString("pt-BR");
+  return String(v).trim();
+}
+
+async function lerArquivoImp(arquivo){
+  $("#corpoImport").innerHTML = `<div class="imp-centro"><span class="spin"></span> Lendo <b>${esc(arquivo.name)}</b>…</div>`;
+  try{
+    await carregarXLSX();
+    const wb = XLSX.read(await arquivo.arrayBuffer(), { type:"array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const linhas = XLSX.utils.sheet_to_json(ws, { header:1, defval:"", raw:true, blankrows:false });
+    if (!linhas.length) throw new Error("A primeira aba da planilha está vazia.");
+
+    // Localiza a linha de cabeçalho (entre as 5 primeiras) e o índice de cada coluna
+    let idxCab = -1, colunas = {};
+    for (let i = 0; i < Math.min(5, linhas.length); i++){
+      const achadas = {};
+      linhas[i].forEach((cab, j) => {
+        const n = normalizarNome(cab);
+        Object.entries(ALIAS_FORN).forEach(([campo, aliases]) => { if (achadas[campo] === undefined && aliases.includes(n)) achadas[campo] = j; });
+      });
+      if (Object.keys(achadas).length >= 3){ idxCab = i; colunas = achadas; break; }
+    }
+    if (idxCab < 0) throw new Error("Não encontrei os cabeçalhos na planilha. Use o modelo ou nomeie as colunas como: " + Object.values(ROTULOS_FORN).join(", ") + ".");
+    const faltam = CAMPOS_FORN.filter(k => k !== "status" && colunas[k] === undefined);
+    if (faltam.length) throw new Error("Colunas não encontradas na planilha: " + faltam.map(k => ROTULOS_FORN[k]).join(", ") + ".");
+
+    imp.arquivo = arquivo.name;
+    imp.linhas = linhas.slice(idxCab + 1)
+      .map((cols, i) => ({ linha: idxCab + i + 2, cols }))
+      .filter(r => r.cols.some(c => celulaTexto(c) !== ""))
+      .map(r => {
+        const v = {};
+        CAMPOS_FORN.forEach(k => v[k] = colunas[k] === undefined ? "" : celulaTexto(r.cols[colunas[k]]));
+        return { linha: r.linha, dados: normalizarLinhaForn(v) };
+      });
+    if (!imp.linhas.length) throw new Error("Nenhuma linha de dados encontrada abaixo do cabeçalho.");
+    classificarImport();
+    renderImportPrevia();
+  }catch(e){
+    console.error(e);
+    renderImportInicio(esc(e.message));
+  }
+}
+
+function normalizarLinhaForn(v){
+  const d = { ...v };
+  d.Title = d.Title.toUpperCase();
+  let cnpj = soDigitos(d.cnpj);
+  if (cnpj.length >= 11 && cnpj.length < 14) cnpj = cnpj.padStart(14, "0"); // Excel perde zeros à esquerda
+  d.cnpj = cnpj ? mascaraCnpj(cnpj) : "";
+  let tel = soDigitos(d.telefone_fornecedor);
+  if (tel.length > 11 && tel.startsWith("55")) tel = tel.slice(2);
+  d.telefone_fornecedor = tel ? mascaraTelefone(tel) : "";
+  d.email_fornecedor = d.email_fornecedor.toLowerCase();
+  const opcoes = estado.forn.statusOpcoes;
+  if (!d.status) d.status = opcoes.includes("Ativo") ? "Ativo" : opcoes[0];
+  else d.status = opcoes.find(o => normalizarNome(o) === normalizarNome(d.status)) || d.status;
+  return d;
+}
+
+/* Define, para cada linha, se ela é nova, atualização, já existente, sem alteração ou erro */
+function classificarImport(){
+  const existentes = estado.forn.itens;
+  const porCodigo = new Map(existentes.map(x => [String(x.Title).toUpperCase(), x]));
+  const vistosCod = new Map(), vistosCnpj = new Map();
+
+  imp.linhas.forEach(r => {
+    const d = r.dados, erros = [];
+    CAMPOS_FORN.forEach(k => { if (!d[k]) erros.push(`${ROTULOS_FORN[k]} em branco`); });
+    if (d.cnpj && !cnpjValido(d.cnpj)) erros.push("CNPJ inválido");
+    if (d.telefone_fornecedor && soDigitos(d.telefone_fornecedor).length < 10) erros.push("Telefone sem DDD");
+    if (d.email_fornecedor && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email_fornecedor)) erros.push("E-mail inválido");
+    if (d.status && !estado.forn.statusOpcoes.includes(d.status)) erros.push(`Status "${d.status}" não existe na lista`);
+
+    if (d.Title){
+      if (vistosCod.has(d.Title)) erros.push(`Código repetido na planilha (linha ${vistosCod.get(d.Title)})`);
+      else vistosCod.set(d.Title, r.linha);
+    }
+    const cnpjDig = soDigitos(d.cnpj);
+    if (cnpjDig){
+      if (vistosCnpj.has(cnpjDig)) erros.push(`CNPJ repetido na planilha (linha ${vistosCnpj.get(cnpjDig)})`);
+      else vistosCnpj.set(cnpjDig, r.linha);
+    }
+
+    const ex = porCodigo.get(d.Title) || null;
+    const outroComCnpj = cnpjDig && existentes.find(x => soDigitos(x.cnpj) === cnpjDig && (!ex || x.id !== ex.id));
+    if (outroComCnpj) erros.push(`CNPJ já cadastrado no fornecedor ${outroComCnpj.Title}`);
+
+    r.existente = ex;
+    r.alterados = null;
+    if (erros.length){ r.acao = "erro"; r.msg = erros.join("; ") + "."; return; }
+    if (!ex){ r.acao = "novo"; r.msg = ""; return; }
+    const alt = {};
+    CAMPOS_FORN.filter(k => k !== "Title").forEach(k => { if ((ex[k] || "") !== d[k]) alt[k] = d[k]; });
+    r.alterados = alt;
+    const nAlt = Object.keys(alt).length;
+    if (!nAlt){ r.acao = "semAlteracao"; r.msg = "Igual ao cadastro atual."; }
+    else if (imp.atualizarExistentes){ r.acao = "atualizar"; r.msg = "Altera: " + Object.keys(alt).map(k => ROTULOS_FORN[k]).join(", ") + "."; }
+    else { r.acao = "existente"; r.msg = "Código já cadastrado; será ignorado (marque a opção para atualizar)."; }
+  });
+}
+
+function contarImport(){
+  const c = { novo:0, atualizar:0, existente:0, semAlteracao:0, erro:0 };
+  imp.linhas.forEach(r => c[r.acao]++);
+  return c;
+}
+
+/* ---------- Passo 2: prévia ---------- */
+function renderImportPrevia(){
+  const c = contarImport();
+  const aGravar = c.novo + c.atualizar;
+  const filtradas = imp.linhas.filter(r => imp.filtro === "todas" || r.acao === imp.filtro);
+  const LIMITE = 500;
+  $("#corpoImport").innerHTML = `
+    <div class="imp-arquivo">Arquivo: <b>${esc(imp.arquivo)}</b> · ${imp.linhas.length} linha(s) lida(s)</div>
+    <div class="chips-imp">
+      ${Object.keys(SITUACAO_IMP).filter(k => c[k]).map(k => `<span class="chip-imp ${k}">${SITUACAO_IMP[k]}: ${c[k]}</span>`).join("")}
+    </div>
+    <div class="imp-opcoes">
+      <label class="chk"><input type="checkbox" id="chkAtualizarImp" ${imp.atualizarExistentes ? "checked" : ""}> Atualizar fornecedores que já existem (mesmo código)</label>
+      <select id="filtroImp">
+        <option value="todas">Mostrar todas</option>
+        ${Object.keys(SITUACAO_IMP).filter(k => c[k]).map(k => `<option value="${k}" ${imp.filtro === k ? "selected" : ""}>Só: ${SITUACAO_IMP[k]}</option>`).join("")}
+      </select>
+    </div>
+    <div class="tab-imp-wrap">
+      <table class="tab-imp">
+        <thead><tr><th>Linha</th><th>Código</th><th>Nome ajustado</th><th>CNPJ</th><th>Situação</th><th>Observação</th></tr></thead>
+        <tbody>${filtradas.slice(0, LIMITE).map(r => `
+          <tr>
+            <td>${r.linha}</td>
+            <td><b>${esc(r.dados.Title)}</b></td>
+            <td class="trunc">${esc(r.dados.nome_ajustado_fornecedor || r.dados.razao_social)}</td>
+            <td>${esc(r.dados.cnpj)}</td>
+            <td><span class="chip-imp ${r.acao}">${SITUACAO_IMP[r.acao]}</span></td>
+            <td class="msg-imp">${esc(r.msg)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    ${filtradas.length > LIMITE ? `<div class="imp-nota">Mostrando ${LIMITE} de ${filtradas.length} linhas.</div>` : ""}
+    ${c.erro ? `<div class="imp-nota">Linhas com erro não serão importadas. Use "Baixar erros" para corrigir e importar de novo; o que já entrou será reconhecido e ignorado.</div>` : ""}`;
+
+  $("#rodapeImport").innerHTML = `
+    <button class="btn btn-secondary" id="btnOutroArqImp" type="button">Outro arquivo</button>
+    ${c.erro ? `<button class="btn btn-secondary" id="btnErrosImp" type="button">Baixar erros</button>` : ""}
+    <span class="esp"></span>
+    <button class="btn btn-primary" id="btnConfirmarImp" type="button" ${aGravar ? "" : "disabled"}>
+      ${aGravar ? `Importar ${aGravar} fornecedor${aGravar > 1 ? "es" : ""}` : "Nada para importar"}
+    </button>`;
+  $("#chkAtualizarImp").onchange = e => { imp.atualizarExistentes = e.target.checked; classificarImport(); renderImportPrevia(); };
+  $("#filtroImp").onchange = e => { imp.filtro = e.target.value; renderImportPrevia(); };
+  $("#btnOutroArqImp").onclick = () => renderImportInicio();
+  if (c.erro) $("#btnErrosImp").onclick = () => baixarRelatorioImp(imp.linhas.filter(r => r.acao === "erro").map(r => ({ ...r, motivo: r.msg })), "erros_importacao_fornecedores.xlsx");
+  $("#btnConfirmarImp").onclick = executarImport;
+}
+
+function baixarRelatorioImp(linhas, nomeArquivo){
+  const cab = ["Linha original", ...Object.values(ROTULOS_FORN), "Motivo"];
+  const dados = linhas.map(r => [r.linha, ...CAMPOS_FORN.map(k => r.dados[k] || ""), r.motivo || ""]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cab, ...dados]), "Fornecedores");
+  XLSX.writeFile(wb, nomeArquivo);
+}
+
+/* ---------- Passo 3: gravação em lotes (Graph $batch, 20 por vez) ---------- */
+async function graphBatch(requisicoes){
+  const token = await obterToken();
+  let resp;
+  try{
+    resp = await fetch("https://graph.microsoft.com/v1.0/$batch", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({ requests: requisicoes })
+    });
+  }catch(e){ throw new Error("Falha de rede ao acessar o SharePoint."); }
+  const dados = await resp.json().catch(() => ({}));
+  if (!resp.ok){
+    const err = new Error((dados.error && dados.error.message) || ("Erro " + resp.status));
+    err.status = resp.status; throw err;
+  }
+  return dados.responses || [];
+}
+
+function msgFalhaImp(status, corpo){
+  const m = (corpo && corpo.error && corpo.error.message) || ("Erro " + status);
+  if (status === 403) return "Sem permissão de escrita nesta lista.";
+  if (status === 409 || /unique|exclusiv|duplicad/i.test(m)) return "Código já existe no SharePoint.";
+  return m;
+}
+
+async function executarImport(){
+  const ops = imp.linhas.filter(r => r.acao === "novo" || r.acao === "atualizar");
+  if (!ops.length) return;
+  imp.importando = true;
+  const total = ops.length;
+  let feitos = 0, okNovos = 0, okAtualizados = 0;
+  const falhas = [];
+  const processados = new Set();
+
+  $("#rodapeImport").innerHTML = "";
+  const atualizarProgresso = () => {
+    $("#corpoImport").innerHTML = `
+      <div class="imp-centro">
+        <h3>Importando fornecedores…</h3>
+        <div class="barra-progresso"><div style="width:${Math.round(feitos / total * 100)}%"></div></div>
+        <div>${feitos} de ${total} processado(s)</div>
+        <div class="imp-nota">Não feche esta tela até terminar.</div>
+      </div>`;
+  };
+  atualizarProgresso();
+
+  try{
+    await obterSiteId();
+    const base = caminhoLista(CONFIG.listas.fornecedores);
+    const fila = ops.map((r, i) => ({
+      r,
+      req: r.acao === "novo"
+        ? { id: String(i), method: "POST", url: `${base}/items`, headers: { "Content-Type":"application/json" }, body: { fields: paraInterno(ApiForn.mapa, r.dados) } }
+        : { id: String(i), method: "PATCH", url: `${base}/items/${r.existente.id}/fields`, headers: { "Content-Type":"application/json" }, body: paraInterno(ApiForn.mapa, r.alterados) }
+    }));
+
+    for (let i = 0; i < fila.length; i += 20){
+      let pendentes = fila.slice(i, i + 20);
+      for (let tentativa = 0; pendentes.length && tentativa < 4; tentativa++){
+        const resps = await graphBatch(pendentes.map(o => o.req));
+        const porId = new Map(resps.map(x => [x.id, x]));
+        const repetir = []; let espera = 0;
+        pendentes.forEach(o => {
+          const x = porId.get(o.req.id);
+          if (!x || x.status === 429 || x.status === 503 || x.status === 504){
+            repetir.push(o);
+            espera = Math.max(espera, Number(x && x.headers && (x.headers["Retry-After"] || x.headers["retry-after"])) || 5);
+          }else if (x.status >= 200 && x.status < 300){
+            feitos++; processados.add(o.r); o.r.acao === "novo" ? okNovos++ : okAtualizados++;
+          }else{
+            feitos++; processados.add(o.r); falhas.push({ ...o.r, motivo: msgFalhaImp(x.status, x.body) });
+          }
+        });
+        pendentes = repetir;
+        atualizarProgresso();
+        if (pendentes.length) await esperar(espera * 1000);
+      }
+      pendentes.forEach(o => { feitos++; processados.add(o.r); falhas.push({ ...o.r, motivo: "SharePoint ocupado (limite de requisições). Tente importar esta linha de novo." }); });
+      atualizarProgresso();
+    }
+  }catch(e){
+    console.error(e);
+    const restantes = ops.filter(r => !processados.has(r));
+    const motivo = e.message === "SESSAO_EXPIRADA" ? "Sessão expirada durante a importação." : e.message;
+    restantes.forEach(r => falhas.push({ ...r, motivo }));
+  }finally{
+    imp.importando = false;
+  }
+
+  // Resultado
+  $("#corpoImport").innerHTML = `
+    <div class="imp-centro">
+      <h3>${falhas.length ? "Importação concluída com pendências" : "Importação concluída"}</h3>
+      <div class="chips-imp" style="justify-content:center;">
+        ${okNovos ? `<span class="chip-imp ok">Cadastrados: ${okNovos}</span>` : ""}
+        ${okAtualizados ? `<span class="chip-imp atualizar">Atualizados: ${okAtualizados}</span>` : ""}
+        ${falhas.length ? `<span class="chip-imp erro">Falharam: ${falhas.length}</span>` : ""}
+      </div>
+    </div>
+    ${falhas.length ? `
+    <div class="tab-imp-wrap">
+      <table class="tab-imp">
+        <thead><tr><th>Linha</th><th>Código</th><th>Nome ajustado</th><th>Motivo</th></tr></thead>
+        <tbody>${falhas.map(r => `<tr><td>${r.linha}</td><td><b>${esc(r.dados.Title)}</b></td><td class="trunc">${esc(r.dados.nome_ajustado_fornecedor)}</td><td class="msg-imp">${esc(r.motivo)}</td></tr>`).join("")}</tbody>
+      </table>
+    </div>` : ""}`;
+  $("#rodapeImport").innerHTML = `
+    ${falhas.length ? `<button class="btn btn-secondary" id="btnFalhasImp" type="button">Baixar falhas</button>` : ""}
+    <span class="esp"></span>
+    <button class="btn btn-primary" id="btnConcluirImp" type="button">Concluir</button>`;
+  if (falhas.length) $("#btnFalhasImp").onclick = () => baixarRelatorioImp(falhas, "falhas_importacao_fornecedores.xlsx");
+  $("#btnConcluirImp").onclick = () => fecharImport();
+
+  estado.forn.carregado = false;
+  carregarFornecedores();
+  toast(`${okNovos + okAtualizados} fornecedor(es) gravado(s)${falhas.length ? `, ${falhas.length} com falha` : ""}.`, !!falhas.length);
+}
+
+/* =========================================================
+   Menu responsivo (gaveta no celular, ícones no tablet)
+   ========================================================= */
+const mqCelular = window.matchMedia("(max-width:780px)");
+const mqTablet = window.matchMedia("(min-width:781px) and (max-width:1099px)");
+const ehCelular = () => mqCelular.matches;
+
+function abrirMenu(){
+  $("#sidebar").classList.add("aberta");
+  $("#backdropMenu").classList.add("aberto");
+  document.body.classList.add("travado");
+}
+function fecharMenu(){
+  $("#sidebar").classList.remove("aberta");
+  $("#backdropMenu").classList.remove("aberto");
+  atualizarTrava();
+}
+function atualizarTrava(){
+  const algoAberto = $("#painel").classList.contains("aberto") || $("#painelImport").classList.contains("aberto") || $("#sidebar").classList.contains("aberta");
+  document.body.classList.toggle("travado", algoAberto);
+  if (!$("#painel").classList.contains("aberto") && !$("#painelImport").classList.contains("aberto")) $("#fundo").classList.remove("aberto");
+}
+function alternarSidebar(){
+  const sb = $("#sidebar");
+  if (mqTablet.matches) sb.classList.toggle("expandida");
+  else sb.classList.toggle("collapsed");
+}
+function aoMudarTamanho(){
+  // Ao trocar de faixa de tela, volta o menu ao estado padrão daquela faixa
+  const sb = $("#sidebar");
+  sb.classList.remove("expandida", "aberta");
+  if (ehCelular()) sb.classList.remove("collapsed");
+  fecharMenu();
+}
+
+/* =========================================================
+   Ligações e inicialização
+   ========================================================= */
+$("#gradeModulos").innerHTML = cardsHtml(MODULOS);
+$("#gradeCadastros").innerHTML = cardsHtml(CADASTROS);
+
+document.addEventListener("click", e => {
+  const alvo = e.target.closest("[data-ir]");
+  if (alvo){ e.preventDefault(); irPara(alvo.dataset.ir); }
+});
+document.querySelectorAll(".nav-item[data-rota]").forEach(b => b.addEventListener("click", () => irPara(b.dataset.rota)));
+$("#btnToggleSidebar").addEventListener("click", alternarSidebar);
+$("#btnMenu").addEventListener("click", abrirMenu);
+$("#backdropMenu").addEventListener("click", fecharMenu);
+$("#fabNovo").addEventListener("click", () => abrirPainel(null));
+mqCelular.addEventListener("change", aoMudarTamanho);
+mqTablet.addEventListener("change", aoMudarTamanho);
+window.addEventListener("hashchange", renderRota);
+
+$("#buscaForn").addEventListener("input", e => { estado.forn.busca = e.target.value; renderFornecedores(); });
+$("#filtroStatusForn").addEventListener("change", e => { estado.forn.filtroStatus = e.target.value; renderFornecedores(); });
+$("#btnAtualizarForn").addEventListener("click", () => { estado.forn.carregado = false; carregarFornecedores(); });
+$("#btnNovoForn").addEventListener("click", () => abrirPainel(null));
+$("#btnSalvarForn").addEventListener("click", salvarForn);
+$("#btnCancelarForn").addEventListener("click", fecharPainel);
+$("#btnFecharPainel").addEventListener("click", fecharPainel);
+$("#fundo").addEventListener("click", () => { fecharPainel(); fecharImport(); });
+$("#btnImportForn").addEventListener("click", abrirImport);
+$("#btnFecharImport").addEventListener("click", fecharImport);
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if ($("#painel").classList.contains("aberto")) fecharPainel();
+  else if ($("#painelImport").classList.contains("aberto")) fecharImport();
+  else fecharMenu();
+});
+form.addEventListener("submit", e => { e.preventDefault(); salvarForn(); });
+campo("cnpj").addEventListener("input", e => e.target.value = mascaraCnpj(e.target.value));
+campo("telefone_fornecedor").addEventListener("input", e => e.target.value = mascaraTelefone(e.target.value));
+campo("Title").addEventListener("input", e => { const p = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); e.target.setSelectionRange(p, p); });
+
+montarFiltroStatus();
+montarLogo();
+$("#versaoApp").textContent = CONFIG.versao;
+verificarNavegadorEmbutido();
+
+(async function iniciar(){
+  if (typeof msal === "undefined"){
+    mostrarStatus("Erro: a biblioteca de login da Microsoft (MSAL) não carregou. Verifique sua conexão e recarregue a página.", "erro");
+  }else{
+    try{ await inicializarMsal(); }
+    catch(e){ mostrarStatus("Erro ao inicializar autenticação: " + esc(e.message), "erro"); }
+  }
+  atualizarAuthArea();
+  renderRota();
+})();
+</script>
+</body>
+</html>
